@@ -1,11 +1,17 @@
+import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaCode, FaUserTie, FaChalkboardTeacher, FaProjectDiagram } from 'react-icons/fa';
 import { Container } from '../layout/Container';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { LazyComponent } from '../../components/common/LazyComponent';
 
-export const ServicesSection = () => {
+export const ServicesSection = memo(() => {
   const navigate = useNavigate();
+
+  const handleServiceClick = useCallback((route) => {
+    navigate(route);
+  }, [navigate]);
 
   const services = [
     {
@@ -55,30 +61,37 @@ export const ServicesSection = () => {
           {services.map((service, index) => {
             const Icon = service.icon;
             return (
-              <Card
+              <LazyComponent
                 key={index}
-                variant="elevated"
-                className="hover:border-primary-blue/50 transition-colors cursor-pointer group bg-dark-surface/80 backdrop-blur-sm"
-                onClick={() => navigate(service.route)}
+                threshold={0.1}
+                className="will-change-transform"
               >
-                <div className="text-primary-blue mb-4 text-3xl group-hover:scale-110 transition-transform flex justify-center">
-                  <Icon />
-                </div>
-                <h3 className="text-xl font-black text-white mb-2 font-display uppercase text-center">{service.title}</h3>
-                <p className="text-gray-300 font-mono text-sm mb-4 text-center">{service.description}</p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full font-mono uppercase tracking-wider"
+                <Card
+                  variant="elevated"
+                  className="hover:border-primary-blue/50 transition-all duration-300 cursor-pointer group bg-dark-surface/80 backdrop-blur-sm transform hover:scale-[1.02] animate-fade-in-up"
+                  onClick={() => handleServiceClick(service.route)}
                 >
-                  GET STARTED
-                </Button>
-              </Card>
+                  <div className="text-primary-blue mb-4 text-3xl group-hover:scale-110 transition-transform flex justify-center will-change-transform">
+                    <Icon />
+                  </div>
+                  <h3 className="text-xl font-black text-white mb-2 font-display uppercase text-center">{service.title}</h3>
+                  <p className="text-gray-300 font-mono text-sm mb-4 text-center">{service.description}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full font-mono uppercase tracking-wider"
+                  >
+                    GET STARTED
+                  </Button>
+                </Card>
+              </LazyComponent>
             );
           })}
         </div>
       </Container>
     </section>
   );
-};
+});
+
+ServicesSection.displayName = 'ServicesSection';
 

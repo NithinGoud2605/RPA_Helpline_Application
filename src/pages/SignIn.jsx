@@ -5,7 +5,7 @@ import { Container } from '../components/layout/Container';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useAuthStore } from '../store/authStore';
-import { useToast } from '../components/common/ToastContainer';
+import { useToast } from '../hooks/useToast';
 import { validateForm } from '../utils/validation';
 
 export const SignIn = () => {

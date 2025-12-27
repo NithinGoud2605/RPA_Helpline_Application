@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaRocket, FaBars, FaTimes, FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
 import { Button } from '../ui/Button';
 import { Container } from './Container';
 import { useAuthStore } from '../../store/authStore';
-import { useToast } from '../common/ToastContainer';
+import { useToast } from '../../hooks/useToast';
 
-export const Navbar = () => {
+export const Navbar = memo(() => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -14,11 +14,11 @@ export const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuthStore();
   const { toast } = useToast();
 
-  const navLinks = [
+  const navLinks = useMemo(() => [
     { to: '/', label: 'SERVICES' },
     { to: '/projects', label: 'PROJECTS' },
     { to: '/how-it-works', label: 'HOW IT WORKS' },
-  ];
+  ], []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -31,12 +31,12 @@ export const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
     toast.success('Logged out successfully');
     navigate('/');
     setUserMenuOpen(false);
-  };
+  }, [logout, toast, navigate]);
 
   return (
     <nav className="bg-dark-surface/80 backdrop-blur-sm border-b border-dark-border fixed top-0 left-0 right-0 z-50">
@@ -202,5 +202,7 @@ export const Navbar = () => {
       </Container>
     </nav>
   );
-};
+});
+
+Navbar.displayName = 'Navbar';
 

@@ -1,28 +1,26 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Container } from '../components/layout/Container';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
 import { useProjectStore } from '../store/projectStore';
 import { useDebounce } from '../hooks/useDebounce';
 import { LoadingSpinner, SkeletonLoader } from '../components/common/LoadingSpinner';
-import { FaClock, FaDollarSign, FaIndustry, FaSearch, FaFilter } from 'react-icons/fa';
+import { LazyComponent } from '../components/common/LazyComponent';
+import { ProjectCard } from '../components/common/ProjectCard';
 
 export const Projects = () => {
   const { projects, loadProjects } = useProjectStore();
-  const navigate = useNavigate();
-  const [searchTerm] = useState('');
-  const [filterUrgency] = useState('all');
-  const [filterIndustry] = useState('all');
-  const [filterStatus] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const itemsPerPage = 6;
 
+  // Filters are disabled to match image design - uncomment to enable
+  const searchTerm = '';
+  const filterUrgency = 'all';
+  const filterIndustry = 'all';
+  const filterStatus = 'all';
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   useEffect(() => {
@@ -34,7 +32,7 @@ export const Projects = () => {
     load();
   }, [loadProjects]);
 
-  const getUrgencyBgColor = (urgency) => {
+  const getUrgencyBgColor = useCallback((urgency) => {
     switch (urgency?.toUpperCase()) {
       case 'CRITICAL':
         return 'bg-primary-red';
@@ -47,7 +45,7 @@ export const Projects = () => {
       default:
         return 'bg-gray-600';
     }
-  };
+  }, []);
 
 
   // Filter and search projects
@@ -77,13 +75,12 @@ export const Projects = () => {
     return filteredProjects.slice(start, start + itemsPerPage);
   }, [filteredProjects, currentPage, showAll]);
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    if (currentPage !== 1) {
-      // Use setTimeout to avoid synchronous setState
-      setTimeout(() => setCurrentPage(1), 0);
-    }
-  }, [debouncedSearch, filterUrgency, filterIndustry, filterStatus, currentPage]);
+  // Reset to page 1 when filters change (disabled for now)
+  // useEffect(() => {
+  //   if (currentPage !== 1) {
+  //     setTimeout(() => setCurrentPage(1), 0);
+  //   }
+  // }, [debouncedSearch, filterUrgency, filterIndustry, filterStatus, currentPage]);
 
   if (loading) {
     return (
@@ -147,43 +144,16 @@ export const Projects = () => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {paginatedProjects.map((project) => (
-              <Card
+              <LazyComponent
                 key={project.id}
-                variant="elevated"
-                className="hover:border-primary-blue/50 transition-colors cursor-pointer bg-dark-surface/80 backdrop-blur-sm"
-                onClick={() => navigate(`/projects/${project.id}`)}
+                threshold={0.1}
+                fallback={<SkeletonLoader lines={5} className="h-48" />}
               >
-                {/* Job Title */}
-                <h3 className="text-xl font-bold text-white mb-3 font-display">
-                  {project.title}
-                </h3>
-
-                {/* Company */}
-                <p className="text-gray-300 font-mono text-sm mb-3">
-                  {project.company || 'Company Name'}
-                </p>
-
-                {/* Location and Type */}
-                <div className="flex flex-wrap gap-2 mb-3 text-xs font-mono text-gray-400">
-                  <span>{project.location || 'Location'}</span>
-                  <span className="text-primary-blue">•</span>
-                  <span>{project.type || 'Type'}</span>
-                </div>
-
-                {/* Salary */}
-                <p className="text-white font-semibold mb-4 font-mono">
-                  {project.salary || project.budget || 'Salary not specified'}
-                </p>
-
-                {/* Urgency Badge */}
-                <div className="flex justify-end">
-                  <span
-                    className={`${getUrgencyBgColor(project.urgency)} text-dark-bg px-3 py-1 rounded font-mono uppercase text-xs font-bold`}
-                  >
-                    {project.urgency || 'MEDIUM'}
-                  </span>
-                </div>
-              </Card>
+                <ProjectCard 
+                  project={project} 
+                  getUrgencyBgColor={getUrgencyBgColor}
+                />
+              </LazyComponent>
             ))}
           </div>
 

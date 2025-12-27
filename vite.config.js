@@ -28,9 +28,13 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'lucide-react'],
+          'ui-vendor': ['framer-motion', 'react-icons'],
+          'store-vendor': ['zustand'],
         },
       },
     },
+    // Optimize build performance
+    chunkSizeWarningLimit: 1000,
+    cssCodeSplit: true,
   },
 })

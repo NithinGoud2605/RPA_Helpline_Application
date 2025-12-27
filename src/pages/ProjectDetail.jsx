@@ -8,7 +8,7 @@ import { useProjectStore } from '../store/projectStore';
 import { useEffect, useState } from 'react';
 import { FaClock, FaDollarSign, FaIndustry, FaUser, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import { useAuthStore } from '../store/authStore';
-import { useToast } from '../components/common/ToastContainer';
+import { useToast } from '../hooks/useToast';
 
 export const ProjectDetail = () => {
   const { id } = useParams();

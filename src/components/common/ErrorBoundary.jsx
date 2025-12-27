@@ -13,7 +13,9 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    // Safely log error to avoid "Cannot convert object to primitive value" error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error caught by boundary:', errorMessage, errorInfo?.componentStack || '');
     this.setState({
       error: error,
       errorInfo: errorInfo,

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaPaperPlane } from 'react-icons/fa';
 import { Container } from '../layout/Container';
@@ -11,20 +11,23 @@ export const HeroSection = () => {
   const { messages, sendMessage, isTyping, displayedText } = useMockChat();
   const inputRef = useRef(null);
 
-  // Check if we have any user or bot messages
-  const hasMessages = messages.filter(m => m.type === 'user' || m.type === 'bot').length > 0;
+  // Check if we have any user or bot messages - memoized
+  const hasMessages = useMemo(
+    () => messages.filter(m => m.type === 'user' || m.type === 'bot').length > 0,
+    [messages]
+  );
   
   // Chat is considered "open" when there are messages
   const chatOpen = hasMessages;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     if (!input.trim() || isTyping) return;
 
     sendMessage(input);
     setInput('');
     inputRef.current?.focus();
-  };
+  }, [input, isTyping, sendMessage]);
 
   return (
     <section className="h-[calc(100vh-4rem)] mt-16 flex flex-col relative overflow-hidden">

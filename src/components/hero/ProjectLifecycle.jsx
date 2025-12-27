@@ -1,10 +1,16 @@
+import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container } from '../layout/Container';
 import { Button } from '../ui/Button';
 import { FaBullseye, FaCog, FaRocket } from 'react-icons/fa';
+import { LazyComponent } from '../../components/common/LazyComponent';
 
-export const ProjectLifecycle = () => {
+export const ProjectLifecycle = memo(() => {
   const navigate = useNavigate();
+
+  const handleStartMission = useCallback(() => {
+    navigate('/register/project');
+  }, [navigate]);
 
   const phases = [
     {
@@ -46,36 +52,39 @@ export const ProjectLifecycle = () => {
           {phases.map((phase, index) => {
             const Icon = phase.icon;
             return (
-              <div
+              <LazyComponent
                 key={index}
-                className="relative border-2 border-primary-red bg-dark-surface/80 backdrop-blur-sm p-6 corner-brackets"
+                threshold={0.2}
+                className="will-change-transform"
               >
-                {/* Corner brackets effect */}
-                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-primary-red"></div>
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-primary-blue"></div>
-                
-                {/* Icon */}
-                <div className="text-primary-red mb-4 flex justify-center">
-                  <Icon className="text-4xl" />
-                </div>
-                
-                {/* Phase Number */}
-                <div className="text-center mb-4">
-                  <div className="text-3xl font-black text-white font-display">
-                    PHASE {phase.number}
+                <div className="relative border-2 border-primary-red bg-dark-surface/80 backdrop-blur-sm p-6 corner-brackets animate-fade-in-up">
+                  {/* Corner brackets effect */}
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-primary-red"></div>
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-primary-blue"></div>
+                  
+                  {/* Icon */}
+                  <div className="text-primary-red mb-4 flex justify-center">
+                    <Icon className="text-4xl" />
                   </div>
+                  
+                  {/* Phase Number */}
+                  <div className="text-center mb-4">
+                    <div className="text-3xl font-black text-white font-display">
+                      PHASE {phase.number}
+                    </div>
+                  </div>
+                  
+                  {/* Title */}
+                  <h3 className="text-2xl font-black text-white mb-4 text-center font-display uppercase">
+                    {phase.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-gray-300 text-center font-mono text-sm leading-relaxed">
+                    {phase.description}
+                  </p>
                 </div>
-                
-                {/* Title */}
-                <h3 className="text-2xl font-black text-white mb-4 text-center font-display uppercase">
-                  {phase.title}
-                </h3>
-                
-                {/* Description */}
-                <p className="text-gray-300 text-center font-mono text-sm leading-relaxed">
-                  {phase.description}
-                </p>
-              </div>
+              </LazyComponent>
             );
           })}
         </div>
@@ -101,7 +110,7 @@ export const ProjectLifecycle = () => {
             <Button
               variant="primary"
               size="lg"
-              onClick={() => navigate('/register/project')}
+              onClick={handleStartMission}
               className="font-mono uppercase tracking-wider whitespace-nowrap"
             >
               START MISSION
@@ -111,5 +120,7 @@ export const ProjectLifecycle = () => {
       </Container>
     </section>
   );
-};
+});
+
+ProjectLifecycle.displayName = 'ProjectLifecycle';
 

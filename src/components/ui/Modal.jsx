@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { FaTimes } from 'react-icons/fa';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 

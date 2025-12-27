@@ -1,19 +1,42 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaRocket, FaBars, FaTimes } from 'react-icons/fa';
+import { FaRocket, FaBars, FaTimes, FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
 import { Button } from '../ui/Button';
 import { Container } from './Container';
+import { useAuthStore } from '../../store/authStore';
+import { useToast } from '../common/ToastContainer';
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuthStore();
+  const { toast } = useToast();
 
   const navLinks = [
     { to: '/', label: 'SERVICES' },
-    { to: '/projects', label: 'RPAFreelancer' },
-    { to: '/register/trainer', label: 'OPERATIONS' },
     { to: '/projects', label: 'PROJECTS' },
+    { to: '/how-it-works', label: 'HOW IT WORKS' },
   ];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    toast.success('Logged out successfully');
+    navigate('/');
+    setUserMenuOpen(false);
+  };
 
   return (
     <nav className="bg-dark-surface/80 backdrop-blur-sm border-b border-dark-border fixed top-0 left-0 right-0 z-50">
@@ -45,20 +68,68 @@ export const Navbar = () => {
 
           {/* Right Side */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/sign-in"
-              className="text-white text-sm font-mono uppercase tracking-wider hover:text-primary-blue transition-colors"
-            >
-              SIGN IN
-            </Link>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => navigate('/register/client')}
-              className="font-mono uppercase tracking-wider"
-            >
-              LAUNCH MISSION
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-white text-sm font-mono uppercase tracking-wider hover:text-primary-blue transition-colors"
+                >
+                  DASHBOARD
+                </Link>
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center space-x-2 text-white hover:text-primary-blue transition-colors"
+                    aria-label="User menu"
+                  >
+                    <div className="w-8 h-8 bg-primary-blue rounded-full flex items-center justify-center">
+                      <FaUser className="text-sm" />
+                    </div>
+                    <span className="text-sm font-mono uppercase tracking-wider">
+                      {user?.name || user?.email?.split('@')[0] || 'USER'}
+                    </span>
+                  </button>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-dark-surface border border-dark-border rounded-lg shadow-lg z-50">
+                      <div className="py-2">
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center px-4 py-2 text-white hover:bg-dark-bg transition-colors"
+                        >
+                          <FaCog className="mr-2 text-sm" />
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center px-4 py-2 text-white hover:bg-dark-bg transition-colors"
+                        >
+                          <FaSignOutAlt className="mr-2 text-sm" />
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/sign-in"
+                  className="text-white text-sm font-mono uppercase tracking-wider hover:text-primary-blue transition-colors"
+                >
+                  SIGN IN
+                </Link>
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => navigate('/register/client')}
+                  className="font-mono uppercase tracking-wider"
+                >
+                  LAUNCH MISSION
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -89,18 +160,42 @@ export const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => {
-                  navigate('/register/client');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full mt-2"
-              >
-                <FaRocket className="mr-2" />
-                Launch Mission
-              </Button>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="text-gray-300 hover:text-primary-blue transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    DASHBOARD
+                  </Link>
+                  <Button
+                    variant="danger"
+                    size="md"
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full mt-2"
+                  >
+                    <FaSignOutAlt className="mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => {
+                    navigate('/register/client');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full mt-2"
+                >
+                  <FaRocket className="mr-2" />
+                  Launch Mission
+                </Button>
+              )}
             </div>
           </div>
         )}

@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { DashboardLayout } from '../../layouts/DashboardLayout';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { ClientDashboard } from './ClientDashboard';
 import { FreelancerDashboard } from './FreelancerDashboard';
 import { DeveloperDashboard } from './DeveloperDashboard';
@@ -10,22 +10,33 @@ import { JobSeekerDashboard } from './JobSeekerDashboard';
 import { initializeMockData } from '../../mock/data';
 
 export const Dashboard = () => {
-  const navigate = useNavigate();
-  const { role, isAuthenticated } = useAuthStore();
+  const { role } = useAuthStore();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    initializeMockData();
-    
-    if (!isAuthenticated) {
-      navigate('/sign-in');
-      return;
-    }
+    const init = async () => {
+      try {
+        initializeMockData();
+        // Simulate data loading
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error('Failed to initialize dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
 
-    if (!role) {
-      navigate('/');
-      return;
-    }
-  }, [isAuthenticated, role, navigate]);
+  if (loading) {
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="flex items-center justify-center py-20">
+          <LoadingSpinner size="xl" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const renderDashboard = () => {
     switch (role) {

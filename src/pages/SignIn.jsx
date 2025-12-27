@@ -3,25 +3,67 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaArrowLeft, FaGoogle } from 'react-icons/fa';
 import { Container } from '../components/layout/Container';
 import { Button } from '../components/ui/Button';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useAuthStore } from '../store/authStore';
+import { useToast } from '../components/common/ToastContainer';
+import { validateForm } from '../utils/validation';
 
 export const SignIn = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock login - in real app, this would authenticate with backend
-    login({
-      email: formData.email,
-      role: 'client',
-      name: formData.email.split('@')[0],
+    
+    // Validate form
+    const validation = validateForm(formData, {
+      email: {
+        required: true,
+        email: true,
+        requiredMessage: 'Email is required',
+        emailMessage: 'Please enter a valid email address',
+      },
+      password: {
+        required: true,
+        requiredMessage: 'Password is required',
+        minLength: 6,
+        minLengthMessage: 'Password must be at least 6 characters',
+      },
     });
-    navigate('/dashboard');
+
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      return;
+    }
+
+    setErrors({});
+    setLoading(true);
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Mock login - in real app, this would authenticate with backend
+      login({
+        email: formData.email,
+        role: 'client',
+        name: formData.email.split('@')[0],
+      });
+      
+      toast.success('Signed in successfully!');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error('Sign in failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,10 +115,20 @@ export const SignIn = () => {
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  if (errors.email) setErrors({ ...errors, email: '' });
+                }}
                 placeholder="operator@mission.control"
-                className="w-full px-4 py-3 bg-dark-bg border border-primary-blue/30 rounded-lg text-white placeholder-gray-500 font-mono tracking-wide focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue"
+                className={`w-full px-4 py-3 bg-dark-bg border rounded-lg text-white placeholder-gray-500 font-mono tracking-wide focus:outline-none focus:ring-1 ${
+                  errors.email
+                    ? 'border-primary-red focus:border-primary-red focus:ring-primary-red'
+                    : 'border-primary-blue/30 focus:border-primary-blue focus:ring-primary-blue'
+                }`}
               />
+              {errors.email && (
+                <p className="mt-1 text-xs text-primary-red font-mono">{errors.email}</p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -88,10 +140,20 @@ export const SignIn = () => {
                 type="password"
                 required
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value });
+                  if (errors.password) setErrors({ ...errors, password: '' });
+                }}
                 placeholder="........"
-                className="w-full px-4 py-3 bg-dark-bg border border-primary-blue/30 rounded-lg text-white placeholder-gray-500 font-mono tracking-wide focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue"
+                className={`w-full px-4 py-3 bg-dark-bg border rounded-lg text-white placeholder-gray-500 font-mono tracking-wide focus:outline-none focus:ring-1 ${
+                  errors.password
+                    ? 'border-primary-red focus:border-primary-red focus:ring-primary-red'
+                    : 'border-primary-blue/30 focus:border-primary-blue focus:ring-primary-blue'
+                }`}
               />
+              {errors.password && (
+                <p className="mt-1 text-xs text-primary-red font-mono">{errors.password}</p>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -99,9 +161,17 @@ export const SignIn = () => {
               type="submit"
               variant="primary"
               size="lg"
+              disabled={loading}
               className="w-full font-mono uppercase tracking-wider text-lg py-4"
             >
-              INITIATE SESSION
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <LoadingSpinner size="sm" className="mr-2" />
+                  AUTHENTICATING...
+                </span>
+              ) : (
+                'INITIATE SESSION'
+              )}
             </Button>
 
             {/* Divider */}

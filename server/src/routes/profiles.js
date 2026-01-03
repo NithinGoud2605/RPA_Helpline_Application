@@ -89,7 +89,13 @@ router.put('/me', authenticateToken, asyncHandler(async (req, res) => {
     website_url,
     linkedin_url,
     is_available,
-    is_profile_public
+    is_profile_public,
+    // New fields
+    alternate_phone,
+    current_company,
+    resume_url,
+    total_experience_years,
+    rpa_experience_years
   } = req.body;
 
   const updates = {};
@@ -107,6 +113,12 @@ router.put('/me', authenticateToken, asyncHandler(async (req, res) => {
   if (linkedin_url !== undefined) updates.linkedin_url = linkedin_url;
   if (is_available !== undefined) updates.is_available = is_available;
   if (is_profile_public !== undefined) updates.is_profile_public = is_profile_public;
+  // New fields
+  if (alternate_phone !== undefined) updates.alternate_phone = alternate_phone;
+  if (current_company !== undefined) updates.current_company = current_company;
+  if (resume_url !== undefined) updates.resume_url = resume_url;
+  if (total_experience_years !== undefined) updates.total_experience_years = total_experience_years;
+  if (rpa_experience_years !== undefined) updates.rpa_experience_years = rpa_experience_years;
 
   const { data: profile, error } = await supabaseAdmin
     .from('profiles')

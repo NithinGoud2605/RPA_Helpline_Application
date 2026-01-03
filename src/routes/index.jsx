@@ -43,7 +43,7 @@ const RegisterDeveloper = lazyLoad(() => import('../pages/Register/RegisterDevel
 const RegisterTrainer = lazyLoad(() => import('../pages/Register/RegisterTrainer'), 'RegisterTrainer');
 const RegisterJobSeeker = lazyLoad(() => import('../pages/Register/RegisterJobSeeker'), 'RegisterJobSeeker');
 const RegisterProject = lazyLoad(() => import('../pages/Register/RegisterProject'), 'RegisterProject');
-const ProfileSetup = lazyLoad(() => import('../pages/ProfileSetup'), 'ProfileSetup');
+const ProfileSetup = lazyLoad(() => import('../pages/ProfileSetupEnhanced'), 'ProfileSetupEnhanced');
 const Jobs = lazyLoad(() => import('../pages/Jobs'), 'Jobs');
 const NotFound = lazyLoad(() => import('../pages/NotFound'), 'NotFound');
 const GitHubCallback = lazyLoad(() => import('../pages/Auth/GitHubCallback'), 'GitHubCallback');

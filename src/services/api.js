@@ -423,6 +423,13 @@ export const uploadApi = {
 };
 
 // =====================
+// OTP API (Sync with backend after Supabase Auth verification)
+// =====================
+export const otpApi = {
+  syncVerification: (type, identifier) => api.post('/otp/sync-verification', { type, identifier }),
+};
+
+// =====================
 // PROFILE API
 // =====================
 export const profileApi = {

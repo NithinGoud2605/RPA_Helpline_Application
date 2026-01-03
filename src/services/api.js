@@ -1,8 +1,41 @@
 // API Service Layer - Backend Integration
 // In production, API is on same origin, so use relative path
 // In development, use localhost or env variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
+const getApiBaseUrl = () => {
+  // If explicitly set via env var (and not empty), use it
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl;
+  }
+  
+  // Runtime check: if we're on production domain, use /api
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const isProductionDomain = hostname.includes('onrender.com') || 
+                                hostname.includes('vercel.app') ||
+                                hostname.includes('netlify.app') ||
+                                (hostname !== 'localhost' && hostname !== '127.0.0.1');
+    
+    if (isProductionDomain) {
+      return '/api';
+    }
+  }
+  
+  // In production mode (built with vite build), use /api
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+  
+  // In development, use localhost
+  return 'http://localhost:3000/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Debug: Log API base URL (helpful for troubleshooting)
+if (typeof window !== 'undefined' && (import.meta.env.DEV || window.location.hostname.includes('onrender.com'))) {
+  console.log('[API] Base URL:', API_BASE_URL, '| Mode:', import.meta.env.MODE, '| PROD:', import.meta.env.PROD);
+}
 
 // Token storage keys
 const TOKEN_KEY = 'rpa_auth_token';

@@ -172,29 +172,28 @@ vercel
 ```
 
 ### Render.com
-The app is configured for Render.com deployment with separate backend and frontend services.
+The app is configured for Render.com deployment as a **single service** (frontend + backend combined).
 
 **Quick Start:**
 1. See detailed instructions in [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md)
 
 **Summary:**
-- **Backend Service**: Deploy from `server/` directory
-- **Frontend Service**: Deploy from root directory
-- Both services automatically:
-  - Listen on `0.0.0.0` (required for Render)
-  - Use the `PORT` environment variable provided by Render
-  - Support CORS for Render URLs
+- **Single Service**: Deploy from root directory
+- Backend serves both API (`/api/*`) and frontend (static files)
+- Automatically:
+  - Builds frontend and serves it from `dist` folder
+  - Listens on `0.0.0.0` (required for Render)
+  - Uses the `PORT` environment variable provided by Render
+  - API uses relative paths (`/api`) since same origin
 
 **Required Environment Variables:**
-
-Backend (`server/`):
 - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - `JWT_SECRET` (min 32 characters)
-- `FRONTEND_URL` (set after frontend deployment)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (optional)
+- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (optional)
 
-Frontend (root):
-- `VITE_API_BASE_URL` (your backend URL + `/api`)
-- `VITE_GOOGLE_CLIENT_ID`, `VITE_GITHUB_CLIENT_ID` (optional)
+**Build Command:** `npm install && cd server && npm install && cd .. && npm run build`  
+**Start Command:** `cd server && npm start`
 
 See [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md) for complete setup instructions.
 

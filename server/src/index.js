@@ -32,9 +32,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Security middleware
-app.use(helmet());
+// In production, adjust helmet for serving static files
+const helmetOptions = process.env.NODE_ENV === 'production' ? {
+  contentSecurityPolicy: false, // Disable CSP to allow React app to work properly
+} : {};
+app.use(helmet(helmetOptions));
 
-// CORS configuration - Support multiple origins for Render deployment
+// CORS configuration
+// In production, frontend and backend are on the same origin, so CORS is simpler
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps, Postman, etc.)
@@ -42,31 +47,19 @@ const corsOptions = {
       return callback(null, true);
     }
     
-    const allowedOrigins = [];
-    
-    // Add explicit frontend URL from env
-    if (process.env.FRONTEND_URL) {
-      allowedOrigins.push(process.env.FRONTEND_URL);
-    }
-    
-    // Add localhost for development
-    if (process.env.NODE_ENV !== 'production') {
-      allowedOrigins.push(
-        'http://localhost:5173',
-        'http://localhost:4173',
-        'http://127.0.0.1:5173',
-        'http://127.0.0.1:4173'
-      );
-    }
-    
-    // Allow any .onrender.com subdomain in production (Render frontend URLs)
+    // In production, frontend and backend are same origin, so allow same origin requests
     if (process.env.NODE_ENV === 'production') {
-      if (origin.match(/^https?:\/\/.*\.onrender\.com$/)) {
-        return callback(null, true);
-      }
+      return callback(null, true);
     }
     
-    // Check if origin is in allowed list
+    // In development, allow localhost origins
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:4173',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:4173'
+    ];
+    
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -109,6 +102,13 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Serve frontend static files in production (from root dist folder)
+// This must come before API routes so static assets are served first
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '../../dist');
+  app.use(express.static(distPath, { index: false })); // index: false prevents serving index.html here (we serve it later for SPA routing)
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -154,9 +154,17 @@ app.use('/api/messages', messageRoutes);
 // File uploads
 app.use('/api/upload', uploadRoutes);
 
-// Error handling
-app.use(notFoundHandler);
-app.use(errorHandler);
+// Error handling for API routes
+app.use('/api', notFoundHandler);
+app.use('/api', errorHandler);
+
+// Serve frontend index.html for all non-API routes (SPA fallback) - must be after API routes
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '../../dist');
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Start server - listen on 0.0.0.0 for Render deployment
 const HOST = process.env.HOST || '0.0.0.0';

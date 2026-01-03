@@ -1,5 +1,8 @@
 // API Service Layer - Backend Integration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+// In production, API is on same origin, so use relative path
+// In development, use localhost or env variable
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
 
 // Token storage keys
 const TOKEN_KEY = 'rpa_auth_token';

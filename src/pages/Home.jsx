@@ -565,12 +565,17 @@ export const Home = memo(() => {
                 </div>
                 
                 {/* Main Heading */}
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-8 leading-none tracking-wider">
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-6 leading-none tracking-wider">
                   <span className="text-foreground block mb-2">YOUR COMMAND CENTER FOR</span>
                   <span className="text-primary bg-gradient-to-r from-primary via-primary to-accent bg-clip-text">
                     RPA EXCELLENCE
                   </span>
                 </h1>
+                
+                {/* Hero Headline */}
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold mb-6 text-secondary">
+                  Hire RPA developer in <span className="text-primary font-black">30 mins</span>
+                </h2>
                 
                 {/* Typing Animation */}
                 <div className="text-xl md:text-2xl text-muted-foreground mb-4 h-10 flex items-center justify-center">

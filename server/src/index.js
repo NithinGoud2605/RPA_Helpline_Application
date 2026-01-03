@@ -34,13 +34,51 @@ const PORT = process.env.PORT || 3000;
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+// CORS configuration - Support multiple origins for Render deployment
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    const allowedOrigins = [];
+    
+    // Add explicit frontend URL from env
+    if (process.env.FRONTEND_URL) {
+      allowedOrigins.push(process.env.FRONTEND_URL);
+    }
+    
+    // Add localhost for development
+    if (process.env.NODE_ENV !== 'production') {
+      allowedOrigins.push(
+        'http://localhost:5173',
+        'http://localhost:4173',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:4173'
+      );
+    }
+    
+    // Allow any .onrender.com subdomain in production (Render frontend URLs)
+    if (process.env.NODE_ENV === 'production') {
+      if (origin.match(/^https?:\/\/.*\.onrender\.com$/)) {
+        return callback(null, true);
+      }
+    }
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -120,8 +158,13 @@ app.use('/api/upload', uploadRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
+// Start server - listen on 0.0.0.0 for Render deployment
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  const apiUrl = process.env.NODE_ENV === 'production' 
+    ? `${process.env.BACKEND_URL || `http://${HOST}:${PORT}`}/api`
+    : `http://localhost:${PORT}/api`;
+  
   console.log(`
   ╔════════════════════════════════════════════════════════════════╗
   ║                                                                ║
@@ -130,8 +173,9 @@ app.listen(PORT, () => {
   ╠════════════════════════════════════════════════════════════════╣
   ║                                                                ║
   ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(45)}║
+  ║   Host: ${String(HOST).padEnd(54)}║
   ║   Port: ${String(PORT).padEnd(53)}║
-  ║   API URL: http://localhost:${PORT}/api${' '.repeat(28)}║
+  ║   API URL: ${apiUrl.padEnd(47)}║
   ║                                                                ║
   ╠════════════════════════════════════════════════════════════════╣
   ║                                                                ║

@@ -92,8 +92,8 @@ export const HeroSection = () => {
 
             {/* Hero Headline */}
             <h2 className={`font-bold text-white font-mono uppercase tracking-[0.15em] transition-all duration-500 ease-in-out ${chatOpen ? 'text-sm sm:text-base mb-1.5' : 'text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-5'}`}>
-              Hire RPA Developers in{' '}
-              <span className="text-primary-blue drop-shadow-[0_0_15px_rgba(77,166,255,0.6)] font-black">30 Minutes</span>
+              Hire RPA developer in{' '}
+              <span className="text-primary-blue drop-shadow-[0_0_15px_rgba(77,166,255,0.6)] font-black">30 mins</span>
             </h2>
             
             {/* Description */}

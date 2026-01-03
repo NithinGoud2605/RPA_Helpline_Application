@@ -172,20 +172,31 @@ vercel
 ```
 
 ### Render.com
-The app is configured for Render.com deployment:
+The app is configured for Render.com deployment with separate backend and frontend services.
 
-1. Connect your GitHub repository to Render
-2. Create a new Web Service
-3. Render will automatically detect the configuration from `render.yaml`
-4. Or manually set:
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-   - **Environment**: `Node`
+**Quick Start:**
+1. See detailed instructions in [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md)
 
-The app will automatically:
-- Listen on `0.0.0.0` (required for Render)
-- Use the `PORT` environment variable provided by Render
-- Serve the production build from the `dist` folder
+**Summary:**
+- **Backend Service**: Deploy from `server/` directory
+- **Frontend Service**: Deploy from root directory
+- Both services automatically:
+  - Listen on `0.0.0.0` (required for Render)
+  - Use the `PORT` environment variable provided by Render
+  - Support CORS for Render URLs
+
+**Required Environment Variables:**
+
+Backend (`server/`):
+- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- `JWT_SECRET` (min 32 characters)
+- `FRONTEND_URL` (set after frontend deployment)
+
+Frontend (root):
+- `VITE_API_BASE_URL` (your backend URL + `/api`)
+- `VITE_GOOGLE_CLIENT_ID`, `VITE_GITHUB_CLIENT_ID` (optional)
+
+See [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md) for complete setup instructions.
 
 ### Other Platforms
 1. Build the app: `npm run build`

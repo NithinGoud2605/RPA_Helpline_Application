@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 
 // Routes
 import authRoutes from './routes/auth.js';
@@ -106,8 +107,19 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Serve frontend static files in production (from root dist folder)
 // This must come before API routes so static assets are served first
 if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../../dist');
-  app.use(express.static(distPath, { index: false })); // index: false prevents serving index.html here (we serve it later for SPA routing)
+  const distPath = path.resolve(__dirname, '../../dist');
+  console.log(`[Frontend] Serving static files from: ${distPath}`);
+  
+  // Check if dist folder exists
+  if (!existsSync(distPath)) {
+    console.error(`[Frontend] WARNING: dist folder not found at ${distPath}`);
+    console.error('[Frontend] Make sure the build command runs before starting the server');
+  } else {
+    console.log(`[Frontend] ✓ dist folder found`);
+  }
+  
+  // Serve static assets (CSS, JS, images, etc.)
+  app.use(express.static(distPath, { index: false }));
 }
 
 // Health check endpoint
@@ -154,17 +166,34 @@ app.use('/api/messages', messageRoutes);
 // File uploads
 app.use('/api/upload', uploadRoutes);
 
-// Error handling for API routes
-app.use('/api', notFoundHandler);
-app.use('/api', errorHandler);
-
 // Serve frontend index.html for all non-API routes (SPA fallback) - must be after API routes
+// This handles GET requests for SPA routing (all other routes serve index.html)
 if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../../dist');
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+  const distPath = path.resolve(__dirname, '../../dist');
+  const indexPath = path.join(distPath, 'index.html');
+  
+  // Handle all non-API GET routes with index.html for SPA routing
+  app.get('*', (req, res, next) => {
+    // Skip API routes - let them fall through to error handlers
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    
+    // Send index.html for all other GET requests (SPA routing)
+    res.sendFile(indexPath, (err) => {
+      if (err) {
+        console.error(`[Frontend] Error serving index.html: ${err.message}`);
+        if (!res.headersSent) {
+          res.status(500).send('Frontend not found. Please ensure the build completed successfully.');
+        }
+      }
+    });
   });
 }
+
+// Error handling for API routes (must be after SPA fallback so it only catches API errors)
+app.use('/api', notFoundHandler);
+app.use('/api', errorHandler);
 
 // Start server - listen on 0.0.0.0 for Render deployment
 const HOST = process.env.HOST || '0.0.0.0';

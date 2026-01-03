@@ -2,13 +2,7 @@
 // In production, API is on same origin, so use relative path
 // In development, use localhost or env variable
 const getApiBaseUrl = () => {
-  // If explicitly set via env var (and not empty), use it
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl && envUrl.trim() !== '') {
-    return envUrl;
-  }
-  
-  // Runtime check: if we're on production domain, use /api
+  // Runtime check: if we're on same origin (production domain), always use /api
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     const isProductionDomain = hostname.includes('onrender.com') || 
@@ -16,6 +10,7 @@ const getApiBaseUrl = () => {
                                 hostname.includes('netlify.app') ||
                                 (hostname !== 'localhost' && hostname !== '127.0.0.1');
     
+    // If on same origin, always use relative path /api
     if (isProductionDomain) {
       return '/api';
     }
@@ -26,7 +21,13 @@ const getApiBaseUrl = () => {
     return '/api';
   }
   
-  // In development, use localhost
+  // In development, check env var first, then default to localhost
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl;
+  }
+  
+  // Default to localhost for development
   return 'http://localhost:3000/api';
 };
 

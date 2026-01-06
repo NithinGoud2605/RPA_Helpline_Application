@@ -1,6 +1,6 @@
 import { useState, memo, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { 
+import {
   Users, Briefcase, GraduationCap, Building2, ArrowLeft, User, Lock, Mail,
   ArrowRight, Shield, CheckCircle, Code, Target, Eye, EyeOff,
   AlertCircle, Sparkles, Award, Globe
@@ -17,16 +17,15 @@ import { AccountRecovery } from '../../components/auth/AccountRecovery';
 // ============================================================================
 const UserTypeCard = memo(({ type, isSelected, onClick }) => {
   const Icon = type.icon;
-  
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative group text-left p-3 border rounded-lg transition-all duration-200 overflow-hidden ${
-        isSelected
-          ? `${type.selectedBg} ${type.selectedBorder}`
-          : 'border-border bg-card/50 hover:border-secondary/50'
-      }`}
+      className={`relative group text-left p-2.5 md:p-3 border rounded-lg transition-all duration-200 overflow-hidden min-h-[64px] ${isSelected
+        ? `${type.selectedBg} ${type.selectedBorder}`
+        : 'border-border bg-card/50 hover:border-secondary/50 active:bg-card/80'
+        }`}
     >
       {/* Selection indicator */}
       {isSelected && (
@@ -34,18 +33,16 @@ const UserTypeCard = memo(({ type, isSelected, onClick }) => {
           <CheckCircle className="w-4 h-4 text-primary" />
         </div>
       )}
-      
+
       <div className="relative flex items-start gap-3">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-          isSelected ? type.iconBg : 'bg-muted border border-border'
-        }`}>
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${isSelected ? type.iconBg : 'bg-muted border border-border'
+          }`}>
           <Icon className={`w-5 h-5 ${isSelected ? type.iconColor : 'text-muted-foreground'}`} />
         </div>
-        
+
         <div className="min-w-0 flex-1">
-          <h3 className={`font-display text-sm font-bold tracking-wider mb-0.5 truncate ${
-            isSelected ? 'text-foreground' : 'text-muted-foreground'
-          }`}>
+          <h3 className={`font-display text-sm font-bold tracking-wider mb-0.5 truncate ${isSelected ? 'text-foreground' : 'text-muted-foreground'
+            }`}>
             {type.label}
           </h3>
           <p className="text-[11px] text-muted-foreground/80 line-clamp-2">
@@ -61,14 +58,14 @@ UserTypeCard.displayName = 'UserTypeCard';
 // ============================================================================
 // COMPACT INPUT FIELD COMPONENT
 // ============================================================================
-const InputField = memo(({ 
-  label, 
-  icon: Icon, 
-  type = "text", 
-  value, 
-  onChange, 
-  placeholder, 
-  error, 
+const InputField = memo(({
+  label,
+  icon: Icon,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  error,
   showPasswordToggle = false,
   autoComplete
 }) => {
@@ -88,17 +85,16 @@ const InputField = memo(({
           onChange={onChange}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className={`w-full px-3 py-2 bg-background/80 border rounded-lg text-foreground text-sm placeholder-muted-foreground/50 font-mono transition-all duration-200 focus:outline-none ${
-            error
-              ? 'border-destructive focus:border-destructive'
-              : 'border-border focus:border-primary focus:ring-1 focus:ring-primary/30'
-          }`}
+          className={`w-full px-3 py-2.5 md:py-2 bg-background/80 border rounded-lg text-foreground text-sm placeholder-muted-foreground/50 font-mono transition-all duration-200 focus:outline-none min-h-[44px] ${error
+            ? 'border-destructive focus:border-destructive'
+            : 'border-border focus:border-primary focus:ring-1 focus:ring-primary/30'
+            }`}
         />
         {showPasswordToggle && (
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 min-w-[32px] min-h-[32px] flex items-center justify-center"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
@@ -122,19 +118,17 @@ const StepIndicator = memo(({ currentStep, totalSteps = 2 }) => (
   <div className="flex items-center justify-center gap-2 mb-4">
     {Array.from({ length: totalSteps }, (_, i) => (
       <div key={i} className="flex items-center">
-        <div className={`w-7 h-7 rounded-full flex items-center justify-center font-display font-bold text-xs transition-all duration-200 ${
-          i < currentStep 
-            ? 'bg-primary text-white' 
-            : i === currentStep 
-              ? 'bg-primary/20 text-primary border border-primary' 
-              : 'bg-muted text-muted-foreground'
-        }`}>
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center font-display font-bold text-xs transition-all duration-200 ${i < currentStep
+          ? 'bg-primary text-white'
+          : i === currentStep
+            ? 'bg-primary/20 text-primary border border-primary'
+            : 'bg-muted text-muted-foreground'
+          }`}>
           {i < currentStep ? <CheckCircle className="w-4 h-4" /> : i + 1}
         </div>
         {i < totalSteps - 1 && (
-          <div className={`w-10 h-0.5 mx-1.5 transition-colors duration-200 ${
-            i < currentStep ? 'bg-primary' : 'bg-border'
-          }`} />
+          <div className={`w-10 h-0.5 mx-1.5 transition-colors duration-200 ${i < currentStep ? 'bg-primary' : 'bg-border'
+            }`} />
         )}
       </div>
     ))}
@@ -149,7 +143,7 @@ export const Register = memo(() => {
   const navigate = useNavigate();
   const { register, setRole, loginWithGoogle, getOAuthStatus, isAuthenticated, isLoading } = useAuthStore();
   const toast = useToast();
-  
+
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedType, setSelectedType] = useState(null);
   const [formData, setFormData] = useState({
@@ -164,7 +158,7 @@ export const Register = memo(() => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showAccountRecovery, setShowAccountRecovery] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState('');
-  
+
   // Check OAuth availability
   const oAuthStatus = getOAuthStatus();
 
@@ -295,7 +289,7 @@ export const Register = memo(() => {
     if (currentStep === 0) {
       return selectedType !== null;
     }
-    
+
     const validation = validateForm(formData, {
       name: { required: true, requiredMessage: 'Name is required' },
       email: { required: true, email: true, requiredMessage: 'Email is required', emailMessage: 'Invalid email' },
@@ -331,16 +325,16 @@ export const Register = memo(() => {
   // Handle form submission
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
-    
+
     if (!validateStep()) return;
-    
+
     setLoading(true);
     setErrors({});
 
     try {
       // Register with backend via store
       const userRole = selectedType.id.startsWith('client') ? 'client' : selectedType.id;
-      
+
       const result = await register({
         full_name: formData.name,
         email: formData.email,
@@ -360,7 +354,7 @@ export const Register = memo(() => {
           toast.info('Account already exists. Please verify your email to recover your account.');
           return;
         }
-        
+
         // Handle rate limiting
         if (result.status === 429) {
           toast.error('Too many registration attempts. Please wait a moment before trying again.');
@@ -374,12 +368,12 @@ export const Register = memo(() => {
     } catch (error) {
       // Show error to user
       console.error('Registration failed:', error);
-      
+
       // Handle rate limiting
       if (error.status === 429) {
         const retryAfter = error.data?.retryAfter || 60;
         toast.error(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
-        setErrors({ 
+        setErrors({
           email: `Rate limit exceeded. Please wait ${retryAfter} seconds.`
         });
       } else {
@@ -409,23 +403,23 @@ export const Register = memo(() => {
       toast.error('Please select your role first');
       return;
     }
-    
+
     setSocialLoading('google');
-    
+
     try {
       const result = await loginWithGoogle();
-      
+
       if (result.cancelled) {
         setSocialLoading(null);
         return;
       }
-      
+
       if (result.success) {
         // Set the user role
         setRole(selectedType.id.startsWith('client') ? 'client' : selectedType.id);
-        
+
         toast.success('Signed up with Google successfully!');
-        
+
         setTimeout(() => {
           navigate('/profile-setup');
         }, 1000);
@@ -482,14 +476,14 @@ export const Register = memo(() => {
   }
 
   return (
-    <div className="h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-3 md:p-4 relative overflow-hidden py-16 md:py-4">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-secondary/5" />
-      
+
       <div className="w-full max-w-4xl relative">
         {/* Back Link */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center gap-1.5 text-muted-foreground font-mono uppercase tracking-wider text-xs mb-3 hover:text-secondary transition-colors group"
         >
           <ArrowLeft className="h-3 w-3 group-hover:-translate-x-0.5 transition-transform" />
@@ -500,7 +494,7 @@ export const Register = memo(() => {
         <div className="tech-panel-strong rounded-xl p-4 sm:p-6 border-glow-blue relative overflow-hidden max-h-[calc(100vh-80px)] overflow-y-auto scrollbar-hide">
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-          
+
           <div className="relative">
             {/* Header */}
             <div className="text-center mb-4">
@@ -508,11 +502,11 @@ export const Register = memo(() => {
                 <Sparkles className="w-3 h-3 text-primary" />
                 <span className="text-[10px] font-mono text-primary tracking-wider">JOIN THE MISSION</span>
               </div>
-              
+
               <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground uppercase tracking-wider mb-1">
                 CREATE <span className="text-primary">ACCOUNT</span>
               </h1>
-              
+
               <p className="text-muted-foreground text-xs max-w-md mx-auto">
                 Join thousands of RPA professionals on the premier platform
               </p>
@@ -540,19 +534,18 @@ export const Register = memo(() => {
             {currentStep === 0 ? (
               <>
                 {/* Category Selection */}
-                <div className="flex justify-center gap-2 mb-4">
+                <div className="flex justify-center gap-1.5 md:gap-2 mb-3 md:mb-4">
                   <button
                     onClick={() => {
                       setRegistrationCategory('opportunity');
                       setSelectedType(null);
                     }}
-                    className={`px-4 py-2 rounded-lg font-mono text-xs uppercase tracking-wider transition-all ${
-                      registrationCategory === 'opportunity'
-                        ? 'bg-primary text-white'
-                        : 'tech-panel text-muted-foreground hover:text-foreground'
-                    }`}
+                    className={`px-3 md:px-4 py-2 rounded-lg font-mono text-[10px] md:text-xs uppercase tracking-wider transition-all min-h-[40px] flex items-center ${registrationCategory === 'opportunity'
+                      ? 'bg-primary text-white'
+                      : 'tech-panel text-muted-foreground hover:text-foreground'
+                      }`}
                   >
-                    <Briefcase className="w-3 h-3 inline mr-1.5" />
+                    <Briefcase className="w-3 h-3 mr-1 md:mr-1.5" />
                     Find Work
                   </button>
                   <button
@@ -560,13 +553,12 @@ export const Register = memo(() => {
                       setRegistrationCategory('hiring');
                       setSelectedType(null);
                     }}
-                    className={`px-4 py-2 rounded-lg font-mono text-xs uppercase tracking-wider transition-all ${
-                      registrationCategory === 'hiring'
-                        ? 'bg-secondary text-white'
-                        : 'tech-panel text-muted-foreground hover:text-foreground'
-                    }`}
+                    className={`px-3 md:px-4 py-2 rounded-lg font-mono text-[10px] md:text-xs uppercase tracking-wider transition-all min-h-[40px] flex items-center ${registrationCategory === 'hiring'
+                      ? 'bg-secondary text-white'
+                      : 'tech-panel text-muted-foreground hover:text-foreground'
+                      }`}
                   >
-                    <Building2 className="w-3 h-3 inline mr-1.5" />
+                    <Building2 className="w-3 h-3 mr-1 md:mr-1.5" />
                     Hire Talent
                   </button>
                 </div>
@@ -578,8 +570,8 @@ export const Register = memo(() => {
                   </h2>
                 </div>
 
-                {/* User Type Cards */}
-                <div className="grid grid-cols-2 gap-2 mb-4">
+                {/* User Type Cards - responsive grid */}
+                <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 mb-4">
                   {currentTypes.map((type) => (
                     <UserTypeCard
                       key={type.id}
@@ -595,7 +587,7 @@ export const Register = memo(() => {
                   onClick={handleNext}
                   disabled={!selectedType}
                   size="default"
-                  className="w-full font-display uppercase tracking-wider text-sm py-2.5 glow-red group"
+                  className="w-full font-display uppercase tracking-wider text-sm py-2.5 glow-red group min-h-[44px]"
                 >
                   CONTINUE
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -608,8 +600,8 @@ export const Register = memo(() => {
                   <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${selectedType?.selectedBg} border ${selectedType?.selectedBorder}`}>
                     <selectedType.icon className={`w-3 h-3 ${selectedType?.iconColor}`} />
                     <span className="text-xs font-mono text-foreground">{selectedType?.label}</span>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setCurrentStep(0)}
                       className="ml-1 text-muted-foreground hover:text-foreground text-xs"
                     >
@@ -618,8 +610,8 @@ export const Register = memo(() => {
                   </div>
                 </div>
 
-                {/* Form Fields */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Form Fields - stack on small mobile */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <InputField
                     label="FULL NAME"
                     icon={User}
@@ -629,7 +621,7 @@ export const Register = memo(() => {
                     error={errors.name}
                     autoComplete="name"
                   />
-                  
+
                   <InputField
                     label="EMAIL"
                     icon={Mail}
@@ -642,7 +634,7 @@ export const Register = memo(() => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <InputField
                     label="PASSWORD"
                     icon={Lock}
@@ -653,7 +645,7 @@ export const Register = memo(() => {
                     showPasswordToggle
                     autoComplete="new-password"
                   />
-                  
+
                   <InputField
                     label="CONFIRM"
                     icon={Shield}
@@ -682,23 +674,23 @@ export const Register = memo(() => {
                 </div>
 
                 {/* Terms Checkbox */}
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div className="relative">
+                <label className="flex items-start gap-2.5 cursor-pointer py-1">
+                  <div className="relative mt-0.5">
                     <input
                       type="checkbox"
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-4 h-4 border border-border rounded peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center">
-                      {agreedToTerms && <CheckCircle className="w-2.5 h-2.5 text-white" />}
+                    <div className="w-5 h-5 border-2 border-border rounded peer-checked:bg-primary peer-checked:border-primary transition-colors flex items-center justify-center">
+                      {agreedToTerms && <CheckCircle className="w-3 h-3 text-white" />}
                     </div>
                   </div>
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground leading-relaxed">
                     I agree to the{' '}
-                    <Link to="/terms" className="text-primary hover:underline">Terms</Link>
-                    {' '}&{' '}
-                    <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                    <Link to="/terms" className="text-primary hover:underline font-medium">Terms of Service</Link>
+                    {' '}and{' '}
+                    <Link to="/terms" className="text-primary hover:underline font-medium">Privacy Policy</Link>
                   </span>
                 </label>
 
@@ -709,7 +701,7 @@ export const Register = memo(() => {
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentStep(0)}
-                    className="font-display uppercase tracking-wider text-xs"
+                    className="font-display uppercase tracking-wider text-xs min-h-[40px]"
                   >
                     <ArrowLeft className="mr-1 h-3 w-3" />
                     BACK
@@ -718,7 +710,7 @@ export const Register = memo(() => {
                     type="submit"
                     size="sm"
                     disabled={loading}
-                    className="flex-1 font-display uppercase tracking-wider text-xs glow-red group"
+                    className="flex-1 font-display uppercase tracking-wider text-xs glow-red group min-h-[40px]"
                   >
                     {loading ? (
                       <>
@@ -752,16 +744,16 @@ export const Register = memo(() => {
                     type="button"
                     onClick={handleGoogleSignUp}
                     disabled={loading || socialLoading !== null}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 tech-panel border border-border rounded-lg text-foreground font-mono text-xs hover:border-secondary hover:bg-secondary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 tech-panel border border-border rounded-lg text-foreground font-mono text-xs hover:border-secondary hover:bg-secondary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                   >
                     {socialLoading === 'google' ? (
                       <LoadingSpinner size="sm" />
                     ) : (
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                       </svg>
                     )}
                     <span>{socialLoading === 'google' ? 'Signing up...' : 'Continue with Google'}</span>
@@ -783,7 +775,7 @@ export const Register = memo(() => {
         </div>
 
         {/* Stats - Compact */}
-        <div className="mt-3 flex items-center justify-center gap-4 text-muted-foreground text-[10px] font-mono">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 md:gap-4 text-muted-foreground text-[10px] font-mono">
           <div className="flex items-center gap-1">
             <Users className="w-3 h-3 text-secondary" />
             <span><span className="text-secondary font-bold">500+</span> experts</span>

@@ -65,24 +65,49 @@ export const MessagesContent = memo(({ onClose }) => {
     fetchConversations();
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!activeConversation || activeConversation.id === 'new') {
-        setMessages([]);
-        return;
-      }
+  // Fetch messages function (reusable for initial load and polling)
+  const fetchMessages = useCallback(async () => {
+    if (!activeConversation || activeConversation.id === 'new') {
+      setMessages([]);
+      return;
+    }
 
+    try {
+      const response = await messageApi.getConversation(activeConversation.id, { limit: 50 });
+      setMessages(response.messages || []);
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  }, [activeConversation]);
+
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  // Poll for new messages every 5 seconds when viewing a conversation
+  useEffect(() => {
+    if (!activeConversation || activeConversation.id === 'new') return;
+
+    const pollInterval = setInterval(fetchMessages, 5000);
+    return () => clearInterval(pollInterval);
+  }, [activeConversation, fetchMessages]);
+
+  // Poll for conversation list updates
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const pollConversations = async () => {
       try {
-        const response = await messageApi.getConversation(activeConversation.id, { limit: 50 });
-        setMessages(response.messages || []);
+        const response = await messageApi.getConversations({ limit: 20 });
+        setConversations(response.conversations || []);
       } catch (error) {
-        console.error('Failed to fetch messages:', error);
-        setMessages([]);
+        console.debug('Failed to poll conversations:', error);
       }
     };
 
-    fetchMessages();
-  }, [activeConversation]);
+    const interval = setInterval(pollConversations, 10000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,12 +120,15 @@ export const MessagesContent = memo(({ onClose }) => {
     setSending(true);
     try {
       if (activeConversation.id === 'new') {
-        const response = await messageApi.createConversation({
+        const response = await messageApi.startConversation({
           recipient_id: activeConversation.target_user_id,
-          message: newMessage
+          initial_message: newMessage,
         });
-        setActiveConversation(response.conversation);
-        setMessages([response.message]);
+
+        if (response.conversation) {
+          setActiveConversation(response.conversation);
+          setMessages(response.message ? [response.message] : []);
+        }
       } else {
         await messageApi.sendMessage(activeConversation.id, { content: newMessage });
         const response = await messageApi.getConversation(activeConversation.id, { limit: 50 });

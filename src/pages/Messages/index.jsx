@@ -1,8 +1,9 @@
-import { memo, useState, useEffect, useRef } from 'react';
+import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { messageApi, profileApi } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../../hooks/useToast';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -11,6 +12,9 @@ import {
   ArrowLeft, MessageSquare, Send, Search, MoreVertical,
   Phone, Video, Info, CheckCheck, Clock, User
 } from 'lucide-react';
+
+// Polling interval in milliseconds
+const MESSAGE_POLL_INTERVAL = 5000;
 
 // ============================================================================
 // CONVERSATION ITEM COMPONENT
@@ -22,14 +26,13 @@ const ConversationItem = memo(({ conversation, isActive, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`p-4 cursor-pointer transition-all border-b border-border/50 ${
-        isActive 
-          ? 'bg-primary/10 border-l-2 border-l-primary' 
-          : 'hover:bg-card'
-      }`}
+      className={`p-3 md:p-4 cursor-pointer transition-all border-b border-border/50 min-h-[64px] ${isActive
+        ? 'bg-primary/10 border-l-2 border-l-primary'
+        : 'hover:bg-card active:bg-card/80'
+        }`}
     >
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+      <div className="flex items-start gap-2.5 md:gap-3">
+        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs md:text-sm font-bold flex-shrink-0">
           {otherParticipant?.avatar_url ? (
             <img src={otherParticipant.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
           ) : (
@@ -42,8 +45,8 @@ const ConversationItem = memo(({ conversation, isActive, onClick }) => {
               {otherParticipant?.full_name || 'Unknown User'}
             </h4>
             <span className="text-xs text-muted-foreground flex-shrink-0">
-              {lastMessage?.created_at 
-                ? new Date(lastMessage.created_at).toLocaleDateString() 
+              {lastMessage?.created_at
+                ? new Date(lastMessage.created_at).toLocaleDateString()
                 : ''}
             </span>
           </div>
@@ -66,14 +69,13 @@ ConversationItem.displayName = 'ConversationItem';
 // MESSAGE BUBBLE COMPONENT
 // ============================================================================
 const MessageBubble = memo(({ message, isOwn }) => (
-  <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}>
-    <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
+  <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3 md:mb-4`}>
+    <div className={`max-w-[85%] md:max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
       <div
-        className={`px-4 py-2 rounded-2xl ${
-          isOwn
-            ? 'bg-primary text-white rounded-br-md'
-            : 'bg-card border border-border rounded-bl-md'
-        }`}
+        className={`px-3 md:px-4 py-2 rounded-2xl ${isOwn
+          ? 'bg-primary text-white rounded-br-md'
+          : 'bg-card border border-border rounded-bl-md'
+          }`}
       >
         <p className="text-sm">{message.content}</p>
       </div>
@@ -98,6 +100,7 @@ export const Messages = memo(() => {
   const [searchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuthStore();
   const toast = useToast();
+  const { refresh: refreshNotifications } = useNotifications();
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -109,6 +112,7 @@ export const Messages = memo(() => {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSidebar, setShowSidebar] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -123,12 +127,12 @@ export const Messages = memo(() => {
       try {
         const response = await messageApi.getConversations({ limit: 50 });
         setConversations(response.conversations || []);
-        
+
         // Check if we should start a new conversation with a specific user
         const targetUserId = searchParams.get('userId');
         if (targetUserId) {
           // Check if conversation already exists
-          const existingConv = response.conversations?.find(c => 
+          const existingConv = response.conversations?.find(c =>
             c.participants?.some(p => p.user?.id === targetUserId)
           );
           if (existingConv) {
@@ -165,28 +169,67 @@ export const Messages = memo(() => {
     }
   }, [isAuthenticated, searchParams, user]);
 
+  // Function to fetch messages (reusable for initial load and polling)
+  const fetchMessages = useCallback(async (showLoading = true) => {
+    if (!activeConversation || activeConversation.id === 'new') {
+      setMessages([]);
+      return;
+    }
+
+    if (showLoading) {
+      setLoadingMessages(true);
+    }
+    try {
+      const response = await messageApi.getConversation(activeConversation.id, { limit: 100 });
+      setMessages(response.messages || []);
+      // Refresh notification counts - backend marks notifications as read when conversation is fetched
+      if (showLoading) {
+        refreshNotifications();
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+      if (showLoading) {
+        setMessages([]);
+      }
+    } finally {
+      if (showLoading) {
+        setLoadingMessages(false);
+      }
+    }
+  }, [activeConversation, refreshNotifications]);
+
   // Fetch messages when conversation changes
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (!activeConversation || activeConversation.id === 'new') {
-        setMessages([]);
-        return;
-      }
+    fetchMessages(true);
+  }, [fetchMessages]);
 
-      setLoadingMessages(true);
+  // Poll for new messages every 5 seconds when viewing a conversation
+  useEffect(() => {
+    if (!activeConversation || activeConversation.id === 'new') return;
+
+    const pollInterval = setInterval(() => {
+      fetchMessages(false); // Don't show loading indicator for polls
+    }, MESSAGE_POLL_INTERVAL);
+
+    return () => clearInterval(pollInterval);
+  }, [activeConversation, fetchMessages]);
+
+  // Poll for conversation list updates every 10 seconds
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const pollConversations = async () => {
       try {
-        const response = await messageApi.getConversation(activeConversation.id, { limit: 100 });
-        setMessages(response.messages || []);
+        const response = await messageApi.getConversations({ limit: 50 });
+        setConversations(response.conversations || []);
       } catch (error) {
-        console.error('Failed to fetch messages:', error);
-        setMessages([]);
-      } finally {
-        setLoadingMessages(false);
+        console.debug('Failed to poll conversations:', error);
       }
     };
 
-    fetchMessages();
-  }, [activeConversation]);
+    const interval = setInterval(pollConversations, 10000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -205,7 +248,7 @@ export const Messages = memo(() => {
           recipient_id: activeConversation.target_user_id,
           initial_message: newMessage
         });
-        
+
         if (response.conversation) {
           setActiveConversation(response.conversation);
           setConversations(prev => [response.conversation, ...prev]);
@@ -216,12 +259,12 @@ export const Messages = memo(() => {
         const response = await messageApi.sendMessage(activeConversation.id, {
           content: newMessage
         });
-        
+
         if (response.message) {
           setMessages(prev => [...prev, response.message]);
         }
       }
-      
+
       setNewMessage('');
       inputRef.current?.focus();
     } catch (error) {
@@ -243,22 +286,22 @@ export const Messages = memo(() => {
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <div className="tech-panel border-b border-border px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="tech-panel border-b border-border px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3 md:gap-4">
           <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-primary" />
-            <h1 className="text-xl font-display font-bold text-foreground tracking-wider">MESSAGES</h1>
+            <h1 className="text-lg md:text-xl font-display font-bold text-foreground tracking-wider">MESSAGES</h1>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Conversations List */}
-        <div className="w-80 border-r border-border flex flex-col bg-card/30">
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Conversations List - Toggle on mobile */}
+        <div className={`${showSidebar ? 'flex' : 'hidden'} md:flex w-full md:w-80 border-r border-border flex-col bg-card/30 absolute md:relative inset-0 top-[57px] md:top-0 z-10 md:z-auto`}>
           {/* Search */}
           <div className="p-4 border-b border-border">
             <div className="relative">
@@ -268,7 +311,7 @@ export const Messages = memo(() => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search conversations..."
-                className="w-full pl-10 pr-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:border-primary"
+                className="w-full pl-10 pr-3 py-2.5 md:py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -285,7 +328,10 @@ export const Messages = memo(() => {
                   key={conv.id}
                   conversation={conv}
                   isActive={activeConversation?.id === conv.id}
-                  onClick={() => setActiveConversation(conv)}
+                  onClick={() => {
+                    setActiveConversation(conv);
+                    setShowSidebar(false);
+                  }}
                 />
               ))
             ) : (
@@ -296,26 +342,33 @@ export const Messages = memo(() => {
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
+        {/* Chat Area - Hidden on mobile when sidebar is shown, always visible on desktop */}
+        <div className={`${showSidebar ? 'hidden' : 'flex'} md:flex flex-1 flex-col`}>
           {activeConversation ? (
             <>
               {/* Chat Header */}
-              <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card/30">
+              <div className="px-4 md:px-6 py-3 md:py-4 border-b border-border flex items-center justify-between bg-card/30">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+                  {/* Back button for mobile */}
+                  <button
+                    onClick={() => setShowSidebar(true)}
+                    className="md:hidden text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm md:text-base font-bold flex-shrink-0">
                     {otherParticipant?.avatar_url ? (
                       <img src={otherParticipant.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
                     ) : (
                       otherParticipant?.full_name?.charAt(0)?.toUpperCase() || 'U'
                     )}
                   </div>
-                  <div>
-                    <h3 className="font-display font-bold text-foreground">
+                  <div className="min-w-0">
+                    <h3 className="font-display font-bold text-foreground text-sm md:text-base truncate">
                       {otherParticipant?.full_name || 'Unknown User'}
                     </h3>
                     {otherParticipant?.headline && (
-                      <p className="text-xs text-muted-foreground">{otherParticipant.headline}</p>
+                      <p className="text-[10px] md:text-xs text-muted-foreground truncate">{otherParticipant.headline}</p>
                     )}
                   </div>
                 </div>
@@ -331,7 +384,7 @@ export const Messages = memo(() => {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-4 md:p-6">
                 {loadingMessages ? (
                   <div className="flex items-center justify-center h-full">
                     <LoadingSpinner />
@@ -358,28 +411,28 @@ export const Messages = memo(() => {
               </div>
 
               {/* Message Input */}
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-border bg-card/30">
-                <div className="flex items-center gap-3">
+              <form onSubmit={handleSendMessage} className="p-3 md:p-4 border-t border-border bg-card/30">
+                <div className="flex items-center gap-2 md:gap-3">
                   <Input
                     ref={inputRef}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 bg-background"
+                    className="flex-1 bg-background text-sm py-2.5"
                     disabled={sending}
                   />
-                  <Button type="submit" disabled={!newMessage.trim() || sending}>
+                  <Button type="submit" disabled={!newMessage.trim() || sending} className="min-h-[44px] min-w-[44px] px-3">
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
               </form>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            <div className="flex-1 flex items-center justify-center text-muted-foreground p-4">
               <div className="text-center">
-                <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-display font-bold text-foreground mb-2">Select a Conversation</h3>
-                <p>Choose a conversation from the list to start messaging</p>
+                <MessageSquare className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 opacity-50" />
+                <h3 className="text-lg md:text-xl font-display font-bold text-foreground mb-2">Select a Conversation</h3>
+                <p className="text-sm">Choose a conversation from the list to start messaging</p>
               </div>
             </div>
           )}

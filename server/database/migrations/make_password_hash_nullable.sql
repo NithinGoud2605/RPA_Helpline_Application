@@ -20,3 +20,4 @@ ALTER COLUMN password_hash DROP NOT NULL;
 -- The application logic will handle validation
 
 
+

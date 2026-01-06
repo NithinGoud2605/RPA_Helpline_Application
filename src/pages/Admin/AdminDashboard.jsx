@@ -11,7 +11,8 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import {
   Users, Briefcase, FolderKanban, CheckCircle, TrendingUp, Clock,
   AlertCircle, BarChart3, Settings, Shield, Edit, Trash2, Eye,
-  Plus, Search, Filter, Download, Code, Zap, Crown, X, Check, Clock3
+  Plus, Search, Filter, Download, Code, Zap, Crown, X, Check, Clock3,
+  GraduationCap, FileText, MessageSquare, Award, Bell, Send
 } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 
@@ -19,7 +20,7 @@ export const AdminDashboard = memo(() => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const toast = useToast();
-  
+
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -87,12 +88,18 @@ export const AdminDashboard = memo(() => {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'analytics', label: 'Analytics', icon: TrendingUp },
     { id: 'users', label: 'Users', icon: Users },
-    { id: 'verification-requests', label: 'Verification Requests', icon: Shield, badge: stats?.pendingVerificationRequests || 0 },
+    { id: 'verification-requests', label: 'Verification', icon: Shield, badge: stats?.pendingVerificationRequests || 0 },
     { id: 'jobs', label: 'Jobs', icon: Briefcase },
     { id: 'projects', label: 'Projects', icon: FolderKanban },
+    { id: 'applications', label: 'Applications', icon: FileText },
+    { id: 'training', label: 'Training', icon: GraduationCap },
+    { id: 'messages', label: 'Messages', icon: MessageSquare },
     { id: 'platforms', label: 'Platforms', icon: Code },
     { id: 'skills', label: 'Skills', icon: Zap },
+    { id: 'certifications', label: 'Certs', icon: Award },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
@@ -148,11 +155,10 @@ export const AdminDashboard = memo(() => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-xs transition-colors whitespace-nowrap ${
-                      activeTab === tab.id
-                        ? 'bg-primary text-white'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-xs transition-colors whitespace-nowrap ${activeTab === tab.id
+                      ? 'bg-primary text-white'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
                   >
                     <Icon className="w-4 h-4" />
                     {tab.label}
@@ -170,12 +176,18 @@ export const AdminDashboard = memo(() => {
           {/* Tab Content */}
           <div className="mt-6">
             {activeTab === 'overview' && <OverviewTab stats={stats} />}
+            {activeTab === 'analytics' && <AnalyticsTab />}
             {activeTab === 'users' && <UsersTab />}
             {activeTab === 'verification-requests' && <VerificationRequestsTab />}
             {activeTab === 'jobs' && <JobsTab />}
             {activeTab === 'projects' && <ProjectsTab />}
+            {activeTab === 'applications' && <ApplicationsTab />}
+            {activeTab === 'training' && <TrainingTab />}
+            {activeTab === 'messages' && <MessagesTab />}
             {activeTab === 'platforms' && <PlatformsTab />}
             {activeTab === 'skills' && <SkillsTab />}
+            {activeTab === 'certifications' && <CertificationsTab />}
+            {activeTab === 'notifications' && <NotificationsTab />}
             {activeTab === 'settings' && <SettingsTab />}
           </div>
         </div>
@@ -428,7 +440,7 @@ const UsersTab = memo(() => {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => {/* TODO: Edit modal */}}
+                            onClick={() => {/* TODO: Edit modal */ }}
                             className="h-7 w-7 p-0"
                           >
                             <Edit className="w-4 h-4" />
@@ -593,7 +605,7 @@ const VerificationRequestsTab = memo(() => {
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                              <div 
+                              <div
                                 className="h-full bg-primary transition-all"
                                 style={{ width: `${request.profile_completion || 0}%` }}
                               />
@@ -1041,4 +1053,660 @@ const SettingsTab = memo(() => {
     </Card>
   );
 });
+SettingsTab.displayName = 'SettingsTab';
+
+// Analytics Tab
+const AnalyticsTab = memo(() => {
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState('30');
+  const toast = useToast();
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [period]);
+
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getAnalytics({ period });
+      setAnalytics(response.analytics);
+    } catch (err) {
+      toast.error(err.error || 'Failed to load analytics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><LoadingSpinner /></div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-end mb-4">
+        <select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value)}
+          className="px-3 py-2 bg-background border border-border rounded-lg text-foreground"
+        >
+          <option value="7">Last 7 Days</option>
+          <option value="30">Last 30 Days</option>
+          <option value="90">Last 90 Days</option>
+        </select>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="tech-panel border-border bg-card/50">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">New Users</p>
+            <p className="text-2xl font-bold">{analytics?.users?.total || 0}</p>
+          </CardContent>
+        </Card>
+        <Card className="tech-panel border-border bg-card/50">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Jobs Posted</p>
+            <p className="text-2xl font-bold">{analytics?.jobs?.total || 0}</p>
+          </CardContent>
+        </Card>
+        <Card className="tech-panel border-border bg-card/50">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Projects</p>
+            <p className="text-2xl font-bold">{analytics?.projects?.total || 0}</p>
+          </CardContent>
+        </Card>
+        <Card className="tech-panel border-border bg-card/50">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Applications</p>
+            <p className="text-2xl font-bold">{analytics?.applications?.total || 0}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Platforms */}
+      <Card className="tech-panel border-border bg-card/50">
+        <CardHeader>
+          <CardTitle className="text-lg font-display">Top Platforms</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {analytics?.topPlatforms?.map((platform, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <span className="text-sm font-medium">{platform.name}</span>
+                <div className="flex items-center gap-2 flex-1 mx-4">
+                  <div className="h-2 bg-muted rounded-full flex-1 overflow-hidden">
+                    <div
+                      className="h-full bg-primary"
+                      style={{ width: `${(platform.count / (analytics.topPlatforms[0].count || 1)) * 100}%` }}
+                    />
+                  </div>
+                </div>
+                <span className="text-sm text-muted-foreground">{platform.count} users</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+});
+AnalyticsTab.displayName = 'AnalyticsTab';
+
+// Applications Tab
+const ApplicationsTab = memo(() => {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 });
+  const [statusFilter, setStatusFilter] = useState('');
+  const toast = useToast();
+
+  useEffect(() => {
+    loadApplications();
+  }, [pagination.page, statusFilter]);
+
+  const loadApplications = async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getApplications({
+        page: pagination.page,
+        limit: pagination.limit,
+        status: statusFilter
+      });
+      setApplications(response.applications || []);
+      setPagination(prev => ({ ...prev, total: response.pagination?.total || 0 }));
+    } catch (err) {
+      toast.error(err.error || 'Failed to load applications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (id, newStatus) => {
+    try {
+      await adminApi.updateApplication(id, { status: newStatus });
+      toast.success('Application status updated');
+      loadApplications();
+    } catch (err) {
+      toast.error(err.error || 'Failed to update status');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 bg-background border border-border rounded-lg text-foreground"
+        >
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="reviewed">Reviewed</option>
+          <option value="shortlisted">Shortlisted</option>
+          <option value="rejected">Rejected</option>
+          <option value="hired">Hired</option>
+        </select>
+      </div>
+
+      <Card className="tech-panel border-border bg-card/50">
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="flex justify-center py-12"><LoadingSpinner /></div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-4 text-xs font-mono text-muted-foreground uppercase">Applicant</th>
+                    <th className="text-left p-4 text-xs font-mono text-muted-foreground uppercase">Job</th>
+                    <th className="text-left p-4 text-xs font-mono text-muted-foreground uppercase">Applied</th>
+                    <th className="text-left p-4 text-xs font-mono text-muted-foreground uppercase">Status</th>
+                    <th className="text-left p-4 text-xs font-mono text-muted-foreground uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {applications.map((app) => (
+                    <tr key={app.id} className="border-b border-border hover:bg-muted/30">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          {app.applicant?.avatar_url ? (
+                            <img src={app.applicant.avatar_url} className="w-8 h-8 rounded-full" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Users className="w-4 h-4 text-primary" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium">{app.applicant?.full_name}</p>
+                            <p className="text-xs text-muted-foreground">{app.applicant?.headline}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <p className="font-medium">{app.job?.title}</p>
+                        <Badge variant="outline" className="text-[10px]">{app.job?.status}</Badge>
+                      </td>
+                      <td className="p-4 text-sm text-muted-foreground">
+                        {new Date(app.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="p-4">
+                        <Badge variant={app.status === 'hired' ? 'default' : 'outline'} className={
+                          app.status === 'hired' ? 'bg-green-500' :
+                            app.status === 'rejected' ? 'text-red-500 border-red-500/30' : ''
+                        }>
+                          {app.status}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
+                        <select
+                          value={app.status}
+                          onChange={(e) => handleStatusUpdate(app.id, e.target.value)}
+                          className="text-xs bg-transparent border border-border rounded px-2 py-1"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="reviewed">Reviewed</option>
+                          <option value="shortlisted">Shortlisted</option>
+                          <option value="rejected">Rejected</option>
+                          <option value="hired">Hired</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+});
+ApplicationsTab.displayName = 'ApplicationsTab';
+
+// Training Tab
+const TrainingTab = memo(() => {
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 });
+  const toast = useToast();
+
+  useEffect(() => {
+    loadPrograms();
+  }, [pagination.page]);
+
+  const loadPrograms = async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getTrainingPrograms({
+        page: pagination.page,
+        limit: pagination.limit
+      });
+      setPrograms(response.programs || []);
+      setPagination(prev => ({ ...prev, total: response.pagination?.total || 0 }));
+    } catch (err) {
+      toast.error(err.error || 'Failed to load training programs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this training program?')) return;
+    try {
+      await adminApi.deleteTrainingProgram(id);
+      toast.success('Program deleted successfully');
+      loadPrograms();
+    } catch (err) {
+      toast.error(err.error || 'Failed to delete program');
+    }
+  };
+
+  return (
+    <Card className="tech-panel border-border bg-card/50">
+      <CardHeader>
+        <CardTitle className="text-lg font-display">Training Programs ({pagination.total})</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center py-12"><LoadingSpinner /></div>
+        ) : (
+          <div className="space-y-4">
+            {programs.map((program) => (
+              <div key={program.id} className="p-4 rounded-lg border border-border hover:border-primary/50 flex items-start justify-between">
+                <div className="flex gap-4">
+                  {program.thumbnail_url ? (
+                    <img src={program.thumbnail_url} className="w-24 h-16 object-cover rounded-lg" />
+                  ) : (
+                    <div className="w-24 h-16 bg-muted rounded-lg flex items-center justify-center">
+                      <GraduationCap className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="font-display font-semibold text-foreground">{program.title}</h4>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{program.description}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Users className="w-3 h-3" />
+                        {program.trainer?.full_name}
+                      </div>
+                      <Badge variant="outline" className="text-[10px]">{program.level}</Badge>
+                      <Badge variant="secondary" className="text-[10px]">${program.price}</Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => window.open(`/training/${program.id}`, '_blank')}>
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleDelete(program.id)} className="text-red-500">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+});
+TrainingTab.displayName = 'TrainingTab';
+
+// Messages Tab
+const MessagesTab = memo(() => {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0 });
+  const [flaggedFilter, setFlaggedFilter] = useState(false);
+  const toast = useToast();
+
+  useEffect(() => {
+    loadMessages();
+  }, [pagination.page, flaggedFilter]);
+
+  const loadMessages = async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getMessages({
+        page: pagination.page,
+        limit: pagination.limit,
+        flagged: flaggedFilter
+      });
+      setMessages(response.messages || []);
+      setPagination(prev => ({ ...prev, total: response.pagination?.total || 0 }));
+    } catch (err) {
+      toast.error(err.error || 'Failed to load messages');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFlag = async (id, isFlagged) => {
+    try {
+      await adminApi.flagMessage(id, {
+        is_flagged: isFlagged,
+        flag_reason: isFlagged ? 'Flagged by admin' : null
+      });
+      toast.success(isFlagged ? 'Message flagged' : 'Message unflagged');
+      loadMessages();
+    } catch (err) {
+      toast.error(err.error || 'Failed to update flag status');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    try {
+      await adminApi.deleteMessage(id);
+      toast.success('Message deleted');
+      loadMessages();
+    } catch (err) {
+      toast.error(err.error || 'Failed to delete message');
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end items-center gap-2">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={flaggedFilter}
+            onChange={(e) => setFlaggedFilter(e.target.checked)}
+            className="rounded border-border bg-background"
+          />
+          Show Flagged Only
+        </label>
+      </div>
+
+      <Card className="tech-panel border-border bg-card/50">
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="flex justify-center py-12"><LoadingSpinner /></div>
+          ) : (
+            <div className="divide-y divide-border">
+              {messages.map((msg) => (
+                <div key={msg.id} className={`p-4 hover:bg-muted/30 ${msg.is_flagged ? 'bg-red-500/5' : ''}`}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex gap-3">
+                      {msg.sender?.avatar_url ? (
+                        <img src={msg.sender.avatar_url} className="w-8 h-8 rounded-full" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Users className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{msg.sender?.full_name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(msg.created_at).toLocaleString()}
+                          </span>
+                          {msg.is_flagged && (
+                            <Badge variant="destructive" className="text-[10px] h-4">Flagged</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm mt-1 text-foreground/90">{msg.content}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleFlag(msg.id, !msg.is_flagged)}
+                        className={msg.is_flagged ? 'text-green-500' : 'text-yellow-500'}
+                        title={msg.is_flagged ? 'Unflag' : 'Flag as inappropriate'}
+                      >
+                        <AlertCircle className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDelete(msg.id)}
+                        className="text-red-500"
+                        title="Delete message"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+});
+MessagesTab.displayName = 'MessagesTab';
+
+// Certifications Tab
+const CertificationsTab = memo(() => {
+  const [certifications, setCertifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingCert, setEditingCert] = useState(null);
+  const toast = useToast();
+
+  useEffect(() => {
+    loadCertifications();
+  }, []);
+
+  const loadCertifications = async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getCertifications();
+      setCertifications(response.certifications || []);
+    } catch (err) {
+      toast.error(err.error || 'Failed to load certifications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this certification?')) return;
+    try {
+      await adminApi.deleteCertification(id);
+      toast.success('Certification deleted');
+      loadCertifications();
+    } catch (err) {
+      toast.error(err.error || 'Failed to delete certification');
+    }
+  };
+
+  return (
+    <Card className="tech-panel border-border bg-card/50">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-display">Certifications ({certifications.length})</CardTitle>
+          <Button size="sm" onClick={() => { setEditingCert(null); setShowModal(true); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Certification
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center py-12"><LoadingSpinner /></div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {certifications.map((cert) => (
+              <div key={cert.id} className="p-4 rounded-lg border border-border hover:border-primary/50">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-display font-semibold text-foreground">{cert.name}</h4>
+                  {cert.is_active ? (
+                    <Badge variant="default" className="bg-green-500 text-white text-xs">Active</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs">Inactive</Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mb-2">{cert.platform?.name}</p>
+                <Badge variant="secondary" className="text-[10px] mb-3">{cert.level}</Badge>
+
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => { setEditingCert(cert); setShowModal(true); }}>
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleDelete(cert.id)} className="text-red-500">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+});
+CertificationsTab.displayName = 'CertificationsTab';
+
+// Notifications Tab
+const NotificationsTab = memo(() => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 });
+  const [broadcastForm, setBroadcastForm] = useState({ title: '', message: '', type: 'announcement' });
+  const [sending, setSending] = useState(false);
+  const toast = useToast();
+
+  useEffect(() => {
+    loadNotifications();
+  }, [pagination.page]);
+
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getNotifications({
+        page: pagination.page,
+        limit: pagination.limit
+      });
+      setNotifications(response.notifications || []);
+      setPagination(prev => ({ ...prev, total: response.pagination?.total || 0 }));
+    } catch (err) {
+      toast.error(err.error || 'Failed to load notifications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBroadcast = async (e) => {
+    e.preventDefault();
+    if (!broadcastForm.title || !broadcastForm.message) return;
+
+    try {
+      setSending(true);
+      await adminApi.sendBroadcast(broadcastForm);
+      toast.success('Broadcast sent successfully');
+      setBroadcastForm({ title: '', message: '', type: 'announcement' });
+      loadNotifications();
+    } catch (err) {
+      toast.error(err.error || 'Failed to send broadcast');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Broadcast Form */}
+      <Card className="tech-panel border-border bg-card/50 h-fit">
+        <CardHeader>
+          <CardTitle className="text-lg font-display flex items-center gap-2">
+            <Send className="w-5 h-5" />
+            Send Broadcast
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleBroadcast} className="space-y-4">
+            <div>
+              <label className="text-xs font-mono text-muted-foreground uppercase mb-1 block">Title</label>
+              <Input
+                value={broadcastForm.title}
+                onChange={(e) => setBroadcastForm(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Announcement Title"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-xs font-mono text-muted-foreground uppercase mb-1 block">Type</label>
+              <select
+                value={broadcastForm.type}
+                onChange={(e) => setBroadcastForm(prev => ({ ...prev, type: e.target.value }))}
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground"
+              >
+                <option value="announcement">Announcement</option>
+                <option value="alert">Alert</option>
+                <option value="info">Info</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-mono text-muted-foreground uppercase mb-1 block">Message</label>
+              <textarea
+                value={broadcastForm.message}
+                onChange={(e) => setBroadcastForm(prev => ({ ...prev, message: e.target.value }))}
+                placeholder="Type your message here..."
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground min-h-[100px]"
+                required
+              />
+            </div>
+            <Button type="submit" disabled={sending} className="w-full">
+              {sending ? <LoadingSpinner size="sm" /> : 'Send Broadcast'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* History */}
+      <Card className="tech-panel border-border bg-card/50 lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="text-lg font-display">Notification History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center py-12"><LoadingSpinner /></div>
+          ) : (
+            <div className="space-y-4">
+              {notifications.map((notif) => (
+                <div key={notif.id} className="p-4 rounded-lg border border-border bg-background/50">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-medium text-foreground">{notif.title}</h4>
+                    <Badge variant="outline" className="text-[10px]">{notif.type}</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{notif.message}</p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>To: {notif.user?.full_name || 'System Broadcast'}</span>
+                    <span>{new Date(notif.created_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+});
+NotificationsTab.displayName = 'NotificationsTab';
 

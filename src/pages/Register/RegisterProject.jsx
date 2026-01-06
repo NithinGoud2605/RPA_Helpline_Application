@@ -44,9 +44,9 @@ export const RegisterProject = memo(() => {
       navigate('/sign-in', { state: { returnTo: '/register/project' } });
       return;
     }
-    if (role && role !== 'client' && role !== 'employer') {
+    if (role && role !== 'client' && role !== 'employer' && role !== 'ba_pm') {
       hasCheckedAuth.current = true;
-      toast.error('Only clients and employers can post projects. Switch to a hiring role to post.');
+      toast.error('Only clients, employers, and BA/PMs can post projects. Switch to a hiring role to post.');
       navigate('/projects');
     }
   }, [isAuthenticated, role, navigate]); // Removed toast from dependencies

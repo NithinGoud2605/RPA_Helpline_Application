@@ -3,6 +3,7 @@ import { memo, useEffect } from 'react';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { ToastContainer } from './components/common/ToastContainer';
 import { TaxonomyProvider } from './contexts/TaxonomyContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { AppRoutes } from './routes';
 import { preloadCriticalRoutes } from './utils/preload';
 
@@ -86,10 +87,12 @@ const App = memo(() => {
     <ErrorBoundary>
       <BrowserRouter>
         <TaxonomyProvider>
-          <div className="app-root smooth-render">
-            <AppRoutes />
-            <ToastContainer />
-          </div>
+          <NotificationProvider>
+            <div className="app-root smooth-render">
+              <AppRoutes />
+              <ToastContainer />
+            </div>
+          </NotificationProvider>
         </TaxonomyProvider>
       </BrowserRouter>
     </ErrorBoundary>

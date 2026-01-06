@@ -5,7 +5,7 @@ import { statsApi, notificationApi, profileApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
-import { 
+import {
   Rocket, LogOut, Settings, Briefcase, Users, GraduationCap, Building2, Activity,
   Bell, Search, Plus, Eye, MessageSquare, TrendingUp, Clock, Star, FileText,
   CheckCircle, AlertCircle, ChevronRight, Calendar, DollarSign, Award,
@@ -36,20 +36,20 @@ import {
 const StatCard = memo(({ stat, index }) => (
   <Card className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 group overflow-hidden relative">
     <div className={`absolute top-0 left-0 w-1 h-full ${stat.accentColor}`} />
-    <CardContent className="p-5">
+    <CardContent className="p-3 md:p-5">
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-mono text-muted-foreground mb-1 uppercase tracking-wider">{stat.label}</p>
-          <p className={`text-2xl font-display font-bold tracking-wider ${stat.valueColor}`}>{stat.value}</p>
+        <div className="min-w-0">
+          <p className="text-[10px] md:text-xs font-mono text-muted-foreground mb-1 uppercase tracking-wider truncate">{stat.label}</p>
+          <p className={`text-lg md:text-2xl font-display font-bold tracking-wider ${stat.valueColor}`}>{stat.value}</p>
           {stat.change && (
-            <div className={`flex items-center gap-1 mt-1 text-xs ${stat.changePositive ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`flex items-center gap-1 mt-1 text-[10px] md:text-xs ${stat.changePositive ? 'text-green-500' : 'text-red-500'}`}>
               <TrendingUp className={`w-3 h-3 ${!stat.changePositive && 'rotate-180'}`} />
               <span>{stat.change}</span>
             </div>
           )}
         </div>
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.iconBg} transition-colors`}>
-          <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
+        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${stat.iconBg} transition-colors`}>
+          <stat.icon className={`w-4 h-4 md:w-5 md:h-5 ${stat.iconColor}`} />
         </div>
       </div>
     </CardContent>
@@ -61,27 +61,27 @@ StatCard.displayName = 'StatCard';
 // QUICK ACTION CARD COMPONENT
 // ============================================================================
 const QuickActionCard = memo(({ action, onClick }) => (
-  <Card 
+  <Card
     className="tech-panel hover-lift border-border hover:border-primary/50 bg-card/50 cursor-pointer group transition-all duration-300"
     onClick={onClick}
   >
-    <CardHeader className="pb-3">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 ${action.iconBg} group-hover:scale-110`}>
-          <action.icon className={`h-7 w-7 ${action.iconColor}`} />
+    <CardHeader className="p-3 md:pb-3">
+      <div className="flex items-center justify-between mb-2 md:mb-4">
+        <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center transition-all duration-300 ${action.iconBg} group-hover:scale-110`}>
+          <action.icon className={`h-5 w-5 md:h-7 md:w-7 ${action.iconColor}`} />
         </div>
-        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
       </div>
-      <CardTitle className="text-lg font-display tracking-wider group-hover:text-primary transition-colors">
+      <CardTitle className="text-sm md:text-lg font-display tracking-wider group-hover:text-primary transition-colors">
         {action.title}
       </CardTitle>
-      <CardDescription className="text-muted-foreground text-sm">
+      <CardDescription className="text-muted-foreground text-xs md:text-sm hidden sm:block">
         {action.description}
       </CardDescription>
     </CardHeader>
     {action.badge && (
-      <CardContent className="pt-0">
-        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-mono ${action.badgeColor}`}>
+      <CardContent className="pt-0 px-3 pb-3">
+        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] md:text-xs font-mono ${action.badgeColor}`}>
           {action.badge}
         </span>
       </CardContent>
@@ -135,7 +135,7 @@ ActivityItem.displayName = 'ActivityItem';
 // ============================================================================
 const SidebarNav = memo(({ role, currentSection, setCurrentSection, unreadMessages, unreadNotifications, onMobileNavClick }) => {
   const navigate = useNavigate();
-  
+
   const navItems = useMemo(() => {
     // Common items for all roles
     const commonItems = [
@@ -161,7 +161,7 @@ const SidebarNav = memo(({ role, currentSection, setCurrentSection, unreadMessag
         { id: 'post-project', label: 'Post Project', icon: Plus, route: '/register/project' },
         { id: 'talent', label: 'Find Talent', icon: Users, route: '/talent' },
       ],
-      
+
       // APPLYING ROLES - They browse and apply to jobs/projects
       freelancer: [
         { id: 'overview', label: 'Dashboard', icon: BarChart3 },
@@ -221,11 +221,10 @@ const SidebarNav = memo(({ role, currentSection, setCurrentSection, unreadMessag
         <button
           key={item.id}
           onClick={() => handleNavClick(item)}
-          className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-mono text-sm transition-all ${
-            currentSection === item.id
-              ? 'bg-primary/10 text-primary border border-primary/30'
-              : 'text-muted-foreground hover:bg-card hover:text-foreground'
-          }`}
+          className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-mono text-sm transition-all ${currentSection === item.id
+            ? 'bg-primary/10 text-primary border border-primary/30'
+            : 'text-muted-foreground hover:bg-card hover:text-foreground'
+            }`}
         >
           <div className="flex items-center gap-3">
             <item.icon className="w-4 h-4" />
@@ -267,7 +266,7 @@ export const Dashboard = memo(() => {
   useEffect(() => {
     // Prevent duplicate calls
     if (fetchingRef.current) return;
-    
+
     const fetchDashboardData = async () => {
       if (!isAuthenticated) {
         setLoading(false);
@@ -358,158 +357,158 @@ export const Dashboard = memo(() => {
   // Stats based on role and real data
   const statsData = useMemo(() => {
     const stats = dashboardStats || {};
-    
+
     const baseStats = {
       client: [
-        { 
-          label: 'Active Projects', 
-          value: String(stats.active_projects || 0), 
-          icon: Briefcase, 
-          iconBg: 'bg-primary/10', 
-          iconColor: 'text-primary', 
-          valueColor: 'text-primary', 
-          accentColor: 'bg-primary' 
+        {
+          label: 'Active Projects',
+          value: String(stats.active_projects || 0),
+          icon: Briefcase,
+          iconBg: 'bg-primary/10',
+          iconColor: 'text-primary',
+          valueColor: 'text-primary',
+          accentColor: 'bg-primary'
         },
-        { 
-          label: 'Total Projects', 
-          value: String(stats.total_projects || 0), 
-          icon: Users, 
-          iconBg: 'bg-secondary/10', 
-          iconColor: 'text-secondary', 
-          valueColor: 'text-secondary', 
-          accentColor: 'bg-secondary' 
+        {
+          label: 'Total Projects',
+          value: String(stats.total_projects || 0),
+          icon: Users,
+          iconBg: 'bg-secondary/10',
+          iconColor: 'text-secondary',
+          valueColor: 'text-secondary',
+          accentColor: 'bg-secondary'
         },
-        { 
-          label: 'Applications', 
-          value: String(stats.received_applications || 0), 
-          icon: FileText, 
-          iconBg: 'bg-accent/10', 
-          iconColor: 'text-accent', 
-          valueColor: 'text-accent', 
-          accentColor: 'bg-accent' 
+        {
+          label: 'Applications',
+          value: String(stats.received_applications || 0),
+          icon: FileText,
+          iconBg: 'bg-accent/10',
+          iconColor: 'text-accent',
+          valueColor: 'text-accent',
+          accentColor: 'bg-accent'
         },
-        { 
-          label: 'Profile Views', 
-          value: String(stats.profile_views || 0), 
-          icon: Eye, 
-          iconBg: 'bg-nasa-gold/10', 
-          iconColor: 'text-nasa-gold', 
-          valueColor: 'text-nasa-gold', 
-          accentColor: 'bg-nasa-gold' 
+        {
+          label: 'Profile Views',
+          value: String(stats.profile_views || 0),
+          icon: Eye,
+          iconBg: 'bg-nasa-gold/10',
+          iconColor: 'text-nasa-gold',
+          valueColor: 'text-nasa-gold',
+          accentColor: 'bg-nasa-gold'
         },
       ],
       freelancer: [
-        { 
-          label: 'Active Projects', 
-          value: String(stats.active_projects || 0), 
-          icon: Briefcase, 
-          iconBg: 'bg-primary/10', 
-          iconColor: 'text-primary', 
-          valueColor: 'text-primary', 
-          accentColor: 'bg-primary' 
+        {
+          label: 'Active Projects',
+          value: String(stats.active_projects || 0),
+          icon: Briefcase,
+          iconBg: 'bg-primary/10',
+          iconColor: 'text-primary',
+          valueColor: 'text-primary',
+          accentColor: 'bg-primary'
         },
-        { 
-          label: 'Profile Views', 
-          value: String(stats.profile_views || 0), 
-          icon: Eye, 
-          iconBg: 'bg-secondary/10', 
-          iconColor: 'text-secondary', 
-          valueColor: 'text-secondary', 
-          accentColor: 'bg-secondary' 
+        {
+          label: 'Profile Views',
+          value: String(stats.profile_views || 0),
+          icon: Eye,
+          iconBg: 'bg-secondary/10',
+          iconColor: 'text-secondary',
+          valueColor: 'text-secondary',
+          accentColor: 'bg-secondary'
         },
-        { 
-          label: 'Applications', 
-          value: String(stats.pending_applications || 0), 
-          icon: FileText, 
-          iconBg: 'bg-accent/10', 
-          iconColor: 'text-accent', 
-          valueColor: 'text-accent', 
-          accentColor: 'bg-accent' 
+        {
+          label: 'Applications',
+          value: String(stats.pending_applications || 0),
+          icon: FileText,
+          iconBg: 'bg-accent/10',
+          iconColor: 'text-accent',
+          valueColor: 'text-accent',
+          accentColor: 'bg-accent'
         },
-        { 
-          label: 'Completed', 
-          value: String(stats.completed_projects || 0), 
-          icon: CheckCircle, 
-          iconBg: 'bg-nasa-gold/10', 
-          iconColor: 'text-nasa-gold', 
-          valueColor: 'text-nasa-gold', 
-          accentColor: 'bg-nasa-gold' 
+        {
+          label: 'Completed',
+          value: String(stats.completed_projects || 0),
+          icon: CheckCircle,
+          iconBg: 'bg-nasa-gold/10',
+          iconColor: 'text-nasa-gold',
+          valueColor: 'text-nasa-gold',
+          accentColor: 'bg-nasa-gold'
         },
       ],
       job_seeker: [
-        { 
-          label: 'Applications', 
-          value: String(stats.total_applications || 0), 
-          icon: FileText, 
-          iconBg: 'bg-primary/10', 
-          iconColor: 'text-primary', 
-          valueColor: 'text-primary', 
-          accentColor: 'bg-primary' 
+        {
+          label: 'Applications',
+          value: String(stats.total_applications || 0),
+          icon: FileText,
+          iconBg: 'bg-primary/10',
+          iconColor: 'text-primary',
+          valueColor: 'text-primary',
+          accentColor: 'bg-primary'
         },
-        { 
-          label: 'Interviews', 
-          value: String(stats.interviews || 0), 
-          icon: Calendar, 
-          iconBg: 'bg-secondary/10', 
-          iconColor: 'text-secondary', 
-          valueColor: 'text-secondary', 
-          accentColor: 'bg-secondary' 
+        {
+          label: 'Interviews',
+          value: String(stats.interviews || 0),
+          icon: Calendar,
+          iconBg: 'bg-secondary/10',
+          iconColor: 'text-secondary',
+          valueColor: 'text-secondary',
+          accentColor: 'bg-secondary'
         },
-        { 
-          label: 'Profile Views', 
-          value: String(stats.profile_views || 0), 
-          icon: Eye, 
-          iconBg: 'bg-accent/10', 
-          iconColor: 'text-accent', 
-          valueColor: 'text-accent', 
-          accentColor: 'bg-accent' 
+        {
+          label: 'Profile Views',
+          value: String(stats.profile_views || 0),
+          icon: Eye,
+          iconBg: 'bg-accent/10',
+          iconColor: 'text-accent',
+          valueColor: 'text-accent',
+          accentColor: 'bg-accent'
         },
-        { 
-          label: 'Pending', 
-          value: String(stats.pending_applications || 0), 
-          icon: Clock, 
-          iconBg: 'bg-nasa-gold/10', 
-          iconColor: 'text-nasa-gold', 
-          valueColor: 'text-nasa-gold', 
-          accentColor: 'bg-nasa-gold' 
+        {
+          label: 'Pending',
+          value: String(stats.pending_applications || 0),
+          icon: Clock,
+          iconBg: 'bg-nasa-gold/10',
+          iconColor: 'text-nasa-gold',
+          valueColor: 'text-nasa-gold',
+          accentColor: 'bg-nasa-gold'
         },
       ],
       trainer: [
-        { 
-          label: 'Active Courses', 
-          value: String(stats.active_courses || 0), 
-          icon: GraduationCap, 
-          iconBg: 'bg-primary/10', 
-          iconColor: 'text-primary', 
-          valueColor: 'text-primary', 
-          accentColor: 'bg-primary' 
+        {
+          label: 'Active Courses',
+          value: String(stats.active_courses || 0),
+          icon: GraduationCap,
+          iconBg: 'bg-primary/10',
+          iconColor: 'text-primary',
+          valueColor: 'text-primary',
+          accentColor: 'bg-primary'
         },
-        { 
-          label: 'Total Students', 
-          value: String(stats.total_students || 0), 
-          icon: Users, 
-          iconBg: 'bg-secondary/10', 
-          iconColor: 'text-secondary', 
-          valueColor: 'text-secondary', 
-          accentColor: 'bg-secondary' 
+        {
+          label: 'Total Students',
+          value: String(stats.total_students || 0),
+          icon: Users,
+          iconBg: 'bg-secondary/10',
+          iconColor: 'text-secondary',
+          valueColor: 'text-secondary',
+          accentColor: 'bg-secondary'
         },
-        { 
-          label: 'Enrollments', 
-          value: String(stats.total_enrollments || 0), 
-          icon: FileText, 
-          iconBg: 'bg-accent/10', 
-          iconColor: 'text-accent', 
-          valueColor: 'text-accent', 
-          accentColor: 'bg-accent' 
+        {
+          label: 'Enrollments',
+          value: String(stats.total_enrollments || 0),
+          icon: FileText,
+          iconBg: 'bg-accent/10',
+          iconColor: 'text-accent',
+          valueColor: 'text-accent',
+          accentColor: 'bg-accent'
         },
-        { 
-          label: 'Profile Views', 
-          value: String(stats.profile_views || 0), 
-          icon: Eye, 
-          iconBg: 'bg-nasa-gold/10', 
-          iconColor: 'text-nasa-gold', 
-          valueColor: 'text-nasa-gold', 
-          accentColor: 'bg-nasa-gold' 
+        {
+          label: 'Profile Views',
+          value: String(stats.profile_views || 0),
+          icon: Eye,
+          iconBg: 'bg-nasa-gold/10',
+          iconColor: 'text-nasa-gold',
+          valueColor: 'text-nasa-gold',
+          accentColor: 'bg-nasa-gold'
         },
       ],
     };
@@ -530,7 +529,7 @@ export const Dashboard = memo(() => {
         { title: 'MY PROJECTS', description: 'Manage your posted projects', icon: Briefcase, iconBg: 'bg-secondary/10 border border-secondary/30', iconColor: 'text-secondary', link: null, section: 'my-projects' },
         { title: 'PROJECT APPLICATIONS', description: 'Review received proposals', icon: FileText, iconBg: 'bg-accent/10 border border-accent/30', iconColor: 'text-accent', link: null, section: 'project-applications' },
       ],
-      
+
       // APPLYING ROLES - Quick actions for finding work
       freelancer: [
         { title: 'BROWSE PROJECTS', description: 'Find new opportunities', icon: Target, iconBg: 'bg-primary/10 border border-primary/30', iconColor: 'text-primary', link: '/projects' },
@@ -602,19 +601,19 @@ export const Dashboard = memo(() => {
         return <PortfolioContent onClose={() => setCurrentSection('overview')} />;
       case 'settings':
         return <SettingsContent onClose={() => setCurrentSection('overview')} />;
-      
+
       // EMPLOYER SECTIONS
       case 'my-jobs':
         return <EmployerDashboard initialTab="jobs" />;
       case 'job-applications':
         return <EmployerDashboard initialTab="applications" />;
-      
+
       // CLIENT SECTIONS
       case 'my-projects':
         return <ClientDashboard initialTab="projects" />;
       case 'project-applications':
         return <ClientDashboard initialTab="applications" />;
-      
+
       // TRAINER SECTIONS
       case 'my-courses':
         return <TrainerDashboard />;
@@ -632,8 +631,8 @@ export const Dashboard = memo(() => {
               </div>
               <div className="grid md:grid-cols-3 gap-4">
                 {quickActions.map((action, index) => (
-                  <QuickActionCard 
-                    key={index} 
+                  <QuickActionCard
+                    key={index}
                     action={action}
                     onClick={() => {
                       if (action.section) {
@@ -655,7 +654,7 @@ export const Dashboard = memo(() => {
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg font-display tracking-wider">RECENT ACTIVITY</CardTitle>
-                      <button 
+                      <button
                         onClick={() => setCurrentSection('notifications')}
                         className="text-xs text-secondary hover:text-secondary/80 font-mono flex items-center gap-1"
                       >
@@ -699,7 +698,7 @@ export const Dashboard = memo(() => {
                   ) : (
                     <p className="text-sm text-muted-foreground">No notifications</p>
                   )}
-                  <button 
+                  <button
                     onClick={() => setCurrentSection('notifications')}
                     className="text-xs text-primary hover:underline mt-4 block"
                   >
@@ -746,12 +745,12 @@ export const Dashboard = memo(() => {
 
       {/* Top Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 tech-panel border-b border-border">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="px-2 sm:px-3 md:px-6 py-2 sm:py-3 md:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Mobile Menu Toggle */}
-            <button 
+            <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-card transition-colors lg:hidden"
+              className="p-1.5 sm:p-2 rounded-lg hover:bg-card transition-colors lg:hidden"
               aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
             >
               {sidebarOpen ? (
@@ -760,58 +759,62 @@ export const Dashboard = memo(() => {
                 <Menu className="w-5 h-5 text-foreground" />
               )}
             </button>
-            
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <Rocket className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-display font-bold text-foreground tracking-wider hidden md:block">RPA HELPLINE</span>
+
+            <Link to="/" className="flex items-center gap-2">
+              <img
+                src="/logo.png"
+                alt="RPA Helpline Logo"
+                className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-lg object-contain"
+              />
+              <span className="text-sm sm:text-base md:text-lg font-display font-bold text-foreground tracking-wider hidden sm:block">RPA HELPLINE</span>
             </Link>
-            
-            {/* Search Bar */}
-            <GlobalSearch />
+
+            {/* Search Bar - Hidden on mobile */}
+            <div className="hidden md:block">
+              <GlobalSearch />
+            </div>
           </div>
-          
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
             <ThemeSwitcher />
-            
-            <button 
+
+            <button
               onClick={() => setCurrentSection('notifications')}
-              className="relative p-2 rounded-lg hover:bg-card transition-colors"
+              className="relative p-1.5 sm:p-2 rounded-lg hover:bg-card transition-colors"
             >
-              <Bell className="w-5 h-5 text-muted-foreground" />
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
               {unreadNotifications > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-primary rounded-full" />
               )}
             </button>
-            
-            <button 
+
+            <button
               onClick={() => setCurrentSection('messages')}
-              className="relative p-2 rounded-lg hover:bg-card transition-colors"
+              className="relative p-1.5 sm:p-2 rounded-lg hover:bg-card transition-colors"
             >
-              <MessageSquare className="w-5 h-5 text-muted-foreground" />
+              <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
               {unreadMessages > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-secondary rounded-full" />
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-secondary rounded-full" />
               )}
             </button>
-            
-            <div className="h-8 w-px bg-border mx-2" />
-            
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
+
+            <div className="h-6 sm:h-8 w-px bg-border mx-1 hidden sm:block" />
+
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <div className="text-right hidden md:block">
                 <p className="text-sm font-display text-foreground">{profile.full_name || profile.name || 'Operator'}</p>
                 <p className={`text-xs font-mono ${userConfig.color}`}>{userConfig.label}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-display font-bold">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-display font-bold text-sm sm:text-base">
                 {(profile.full_name || profile.name || 'O').charAt(0).toUpperCase()}
               </div>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 onClick={handleSignOut}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground hidden sm:flex"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
           </div>
@@ -822,13 +825,13 @@ export const Dashboard = memo(() => {
       <div className="flex pt-[73px]">
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
         )}
-        
+
         {/* Sidebar */}
         <aside className={`fixed left-0 top-[73px] bottom-0 w-64 tech-panel border-r border-border p-4 overflow-y-auto transition-transform duration-300 z-40 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
           {/* User Profile Card */}
@@ -849,8 +852,8 @@ export const Dashboard = memo(() => {
                 <span className="text-primary font-mono">{profileCompletion}%</span>
               </div>
               <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500" 
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500"
                   style={{ width: `${profileCompletion}%` }}
                 />
               </div>
@@ -858,9 +861,9 @@ export const Dashboard = memo(() => {
           </div>
 
           {/* Navigation */}
-          <SidebarNav 
-            role={role} 
-            currentSection={currentSection} 
+          <SidebarNav
+            role={role}
+            currentSection={currentSection}
             setCurrentSection={setCurrentSection}
             unreadMessages={unreadMessages}
             unreadNotifications={unreadNotifications}
@@ -875,7 +878,7 @@ export const Dashboard = memo(() => {
 
         {/* Main Content */}
         <main className="flex-1 lg:ml-64 min-h-[calc(100vh-73px)]">
-          <div className="p-6 lg:p-8">
+          <div className="p-4 md:p-6 lg:p-8">
             {/* Welcome Header - Only show in overview */}
             {currentSection === 'overview' && (
               <div className="mb-8">
@@ -897,7 +900,7 @@ export const Dashboard = memo(() => {
 
             {/* Stats Grid - Only show in overview */}
             {currentSection === 'overview' && (
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
                 {statsData.map((stat, index) => (
                   <StatCard key={index} stat={stat} index={index} />
                 ))}

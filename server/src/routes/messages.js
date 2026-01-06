@@ -4,6 +4,7 @@ import { authenticateToken } from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { paginationValidation } from '../middleware/validate.js';
 import { PAGINATION } from '../config/constants.js';
+import { notifyNewMessage } from '../services/notificationService.js';
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ router.get('/conversations', authenticateToken, paginationValidation, asyncHandl
     .order('last_message_at', { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1);
 
-  // Get other participants for each conversation
+  // Get all participants for each conversation (including current user for is_current_user flag)
   const conversationsWithParticipants = await Promise.all(
     conversations.map(async (conv) => {
       const { data: participants } = await supabaseAdmin
@@ -56,14 +57,20 @@ router.get('/conversations', authenticateToken, paginationValidation, asyncHandl
           role,
           user:profiles!conversation_participants_user_id_fkey(id, full_name, avatar_url, user_type)
         `)
-        .eq('conversation_id', conv.id)
-        .neq('user_id', req.userId);
+        .eq('conversation_id', conv.id);
 
       const participation = participations.find(p => p.conversation_id === conv.id);
 
+      // Add is_current_user flag to each participant
+      const participantsWithFlag = participants.map(p => ({
+        ...p,
+        is_current_user: p.user_id === req.userId,
+        user: p.user
+      }));
+
       return {
         ...conv,
-        participants: participants.map(p => p.user),
+        participants: participantsWithFlag,
         unread_count: participation?.unread_count || 0,
         is_muted: participation?.is_muted || false
       };
@@ -147,10 +154,42 @@ router.get('/conversations/:id', authenticateToken, paginationValidation, asyncH
     .eq('conversation_id', id)
     .eq('user_id', req.userId);
 
+  // Mark related message notifications as read for this conversation
+  await supabaseAdmin
+    .from('notifications')
+    .update({
+      is_read: true,
+      read_at: new Date().toISOString()
+    })
+    .eq('user_id', req.userId)
+    .eq('reference_type', 'message')
+    .eq('reference_id', id)
+    .eq('is_read', false);
+
+  // Also mark related message notifications as read for this user
+  await supabaseAdmin
+    .from('notifications')
+    .update({
+      is_read: true,
+      read_at: new Date().toISOString()
+    })
+    .eq('user_id', req.userId)
+    .eq('notification_type', 'new_message')
+    .eq('reference_type', 'message')
+    .eq('reference_id', id);
+
+  // Add is_current_user flag to participants
+  const participantsWithFlag = participants.map(p => ({
+    ...p.user,
+    role: p.role,
+    is_current_user: p.user_id === req.userId,
+    user: p.user
+  }));
+
   res.json({
     conversation: {
       ...conversation,
-      participants: participants.map(p => ({ ...p.user, role: p.role }))
+      participants: participantsWithFlag
     },
     messages: messages.reverse(), // Oldest first for display
     pagination: {
@@ -167,11 +206,15 @@ router.post('/conversations', authenticateToken, asyncHandler(async (req, res) =
   const { 
     recipient_id,
     subject,
-    message,
+    message: messageField,
+    initial_message,
     conversation_type = 'direct',
     project_id,
     job_id
   } = req.body;
+
+  // Accept both 'message' and 'initial_message' field names for compatibility
+  const message = messageField || initial_message;
 
   if (!recipient_id || !message) {
     return res.status(400).json({ error: 'Recipient and message are required' });
@@ -227,17 +270,39 @@ router.post('/conversations', authenticateToken, asyncHandler(async (req, res) =
             })
             .eq('id', directConv.id);
 
-          // Update unread count for recipient
+          // Update unread count for recipient - fetch current count first
+          const { data: recipientParticipant } = await supabaseAdmin
+            .from('conversation_participants')
+            .select('unread_count')
+            .eq('conversation_id', directConv.id)
+            .eq('user_id', recipient_id)
+            .single();
+
           await supabaseAdmin
             .from('conversation_participants')
-            .update({ unread_count: supabaseAdmin.raw('unread_count + 1') })
+            .update({ unread_count: (recipientParticipant?.unread_count || 0) + 1 })
             .eq('conversation_id', directConv.id)
             .eq('user_id', recipient_id);
 
+          // Notify recipient about the new message
+          notifyNewMessage({
+            recipientId: recipient_id,
+            senderId: req.userId,
+            conversationId: directConv.id,
+            messagePreview: message.substring(0, 100)
+          }).catch(err => console.error('Failed to send message notification:', err));
+
+          // Return a consistent response shape for frontend
+          const { data: conversationForResponse } = await supabaseAdmin
+            .from('conversations')
+            .select('*')
+            .eq('id', directConv.id)
+            .single();
+
           return res.json({
-            message: 'Message sent',
-            conversation_id: directConv.id,
-            new_message: newMessage
+            status: 'Message sent',
+            conversation: conversationForResponse || { id: directConv.id },
+            message: newMessage
           });
         }
       }
@@ -282,10 +347,19 @@ router.post('/conversations', authenticateToken, asyncHandler(async (req, res) =
     .select()
     .single();
 
+  // Notify recipient about the new conversation
+  notifyNewMessage({
+    recipientId: recipient_id,
+    senderId: req.userId,
+    conversationId: conversation.id,
+    messagePreview: message.substring(0, 100)
+  }).catch(err => console.error('Failed to send message notification:', err));
+
+  // Return consistent shape with conversation and message payload
   res.status(201).json({
-    message: 'Conversation started',
+    status: 'Conversation started',
     conversation,
-    first_message: firstMessage
+    message: firstMessage
   });
 }));
 
@@ -341,11 +415,28 @@ router.post('/conversations/:id/messages', authenticateToken, asyncHandler(async
     .eq('id', id);
 
   // Update unread count for other participants
-  await supabaseAdmin
+  const { data: otherParticipants } = await supabaseAdmin
     .from('conversation_participants')
-    .update({ unread_count: supabaseAdmin.raw('unread_count + 1') })
+    .select('user_id, unread_count')
     .eq('conversation_id', id)
     .neq('user_id', req.userId);
+
+  // Update each participant's unread count and notify them
+  for (const participant of otherParticipants || []) {
+    await supabaseAdmin
+      .from('conversation_participants')
+      .update({ unread_count: (participant.unread_count || 0) + 1 })
+      .eq('conversation_id', id)
+      .eq('user_id', participant.user_id);
+
+    // Notify this participant about the new message
+    notifyNewMessage({
+      recipientId: participant.user_id,
+      senderId: req.userId,
+      conversationId: id,
+      messagePreview: content.substring(0, 100)
+    }).catch(err => console.error('Failed to send message notification:', err));
+  }
 
   res.status(201).json({ message });
 }));

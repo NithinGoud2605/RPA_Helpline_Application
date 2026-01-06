@@ -123,6 +123,30 @@ router.delete('/', authenticateToken, asyncHandler(async (req, res) => {
   res.json({ message: 'Read notifications deleted' });
 }));
 
+// Get unread counts only (lightweight endpoint for navbar badges)
+router.get('/counts', authenticateToken, asyncHandler(async (req, res) => {
+  // Get unread notification count
+  const { count: notificationCount } = await supabaseAdmin
+    .from('notifications')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', req.userId)
+    .eq('is_read', false);
+
+  // Get unread message count (sum of unread_count from all conversations)
+  const { data: participations } = await supabaseAdmin
+    .from('conversation_participants')
+    .select('unread_count')
+    .eq('user_id', req.userId)
+    .eq('is_active', true);
+
+  const messageCount = participations?.reduce((sum, p) => sum + (p.unread_count || 0), 0) || 0;
+
+  res.json({
+    notifications: notificationCount || 0,
+    messages: messageCount
+  });
+}));
+
 // Helper function to create notification
 export async function createNotification({
   userId,

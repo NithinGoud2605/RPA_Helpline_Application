@@ -10,7 +10,7 @@ import { ScrollToTop } from '../components/common/SmoothScroll';
 
 // Helper function to lazy load named exports with preload support
 const lazyLoad = (importFunc, exportName) => {
-  const Component = lazy(() => 
+  const Component = lazy(() =>
     importFunc().then(module => {
       const component = module[exportName];
       if (!component) {
@@ -25,7 +25,7 @@ const lazyLoad = (importFunc, exportName) => {
       throw error;
     })
   );
-  
+
   // Add preload method for performance
   Component.preload = importFunc;
   return Component;
@@ -50,6 +50,7 @@ const PublicProfile = lazyLoad(() => import('../pages/Profile/PublicProfile'), '
 const Jobs = lazyLoad(() => import('../pages/Jobs'), 'Jobs');
 const JobDetail = lazyLoad(() => import('../pages/Jobs/JobDetail'), 'JobDetail');
 const NotFound = lazyLoad(() => import('../pages/NotFound'), 'NotFound');
+const TermsAndConditions = lazy(() => import('../pages/TermsAndConditions'));
 const GitHubCallback = lazyLoad(() => import('../pages/Auth/GitHubCallback'), 'GitHubCallback');
 const BrowseTalent = lazyLoad(() => import('../pages/Talent/BrowseTalent'), 'BrowseTalent');
 const PostJob = lazyLoad(() => import('../pages/Jobs/PostJob'), 'PostJob');
@@ -67,7 +68,7 @@ const EditCourse = lazyLoad(() => import('../pages/Training/EditCourse'), 'EditC
 
 // Smooth loading fallback
 const SmoothLoader = memo(() => (
-  <div 
+  <div
     className="min-h-screen flex items-center justify-center bg-background"
     style={{
       animation: 'fadeIn 0.3s ease-out',
@@ -91,7 +92,7 @@ const RouteWrapper = memo(({ children, withLayout = true }) => {
       </MainLayout>
     );
   }
-  
+
   return (
     <PageTransition>
       <Suspense fallback={<SmoothLoader />}>
@@ -104,7 +105,7 @@ RouteWrapper.displayName = 'RouteWrapper';
 
 export const AppRoutes = () => {
   const location = useLocation();
-  
+
   return (
     <>
       <ScrollToTop />
@@ -114,15 +115,16 @@ export const AppRoutes = () => {
           <Route path="/" element={<RouteWrapper><Home /></RouteWrapper>} />
           <Route path="/sign-in" element={<RouteWrapper><SignIn /></RouteWrapper>} />
           <Route path="/forgot-password" element={<RouteWrapper><ForgotPassword /></RouteWrapper>} />
+          <Route path="/terms" element={<RouteWrapper><TermsAndConditions /></RouteWrapper>} />
           <Route path="/projects" element={<RouteWrapper><Projects /></RouteWrapper>} />
           <Route path="/projects/:id" element={<RouteWrapper><ProjectDetail /></RouteWrapper>} />
           <Route path="/jobs" element={<RouteWrapper><Jobs /></RouteWrapper>} />
           <Route path="/jobs/:id" element={<RouteWrapper><JobDetail /></RouteWrapper>} />
           <Route path="/profile/:userId" element={<RouteWrapper><PublicProfile /></RouteWrapper>} />
-          <Route 
-            path="/talent" 
+          <Route
+            path="/talent"
             element={
-              <RoleProtectedRoute 
+              <RoleProtectedRoute
                 allowedRoles={['client', 'employer']}
                 redirectTo="/dashboard"
                 errorMessage="Only hiring members can browse talent. Switch to a hiring role to access this feature."
@@ -131,15 +133,15 @@ export const AppRoutes = () => {
                   <BrowseTalent />
                 </RouteWrapper>
               </RoleProtectedRoute>
-            } 
+            }
           />
           <Route path="/search" element={<RouteWrapper><SearchPage /></RouteWrapper>} />
           <Route path="/courses" element={<RouteWrapper><Courses /></RouteWrapper>} />
           <Route path="/courses/:id" element={<RouteWrapper><CourseDetail /></RouteWrapper>} />
-          <Route 
-            path="/create-course" 
+          <Route
+            path="/create-course"
             element={
-              <RoleProtectedRoute 
+              <RoleProtectedRoute
                 allowedRoles={['trainer']}
                 redirectTo="/courses"
                 errorMessage="Only trainers can create courses."
@@ -148,12 +150,12 @@ export const AppRoutes = () => {
                   <CreateCourse />
                 </RouteWrapper>
               </RoleProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/courses/:id/edit" 
+          <Route
+            path="/courses/:id/edit"
             element={
-              <RoleProtectedRoute 
+              <RoleProtectedRoute
                 allowedRoles={['trainer']}
                 redirectTo="/courses"
                 errorMessage="Only trainers can edit courses."
@@ -162,7 +164,7 @@ export const AppRoutes = () => {
                   <EditCourse />
                 </RouteWrapper>
               </RoleProtectedRoute>
-            } 
+            }
           />
           <Route path="/how-it-works" element={<RouteWrapper><HowItWorks /></RouteWrapper>} />
           <Route path="/register" element={<RouteWrapper><Register /></RouteWrapper>} />
@@ -171,10 +173,10 @@ export const AppRoutes = () => {
           <Route path="/register/developer" element={<RouteWrapper><RegisterDeveloper /></RouteWrapper>} />
           <Route path="/register/trainer" element={<RouteWrapper><RegisterTrainer /></RouteWrapper>} />
           <Route path="/register/jobseeker" element={<RouteWrapper><RegisterJobSeeker /></RouteWrapper>} />
-          
+
           {/* OAuth Callbacks */}
           <Route path="/auth/github/callback" element={<RouteWrapper withLayout={false}><GitHubCallback /></RouteWrapper>} />
-          
+
           {/* Protected Routes */}
           <Route
             path="/dashboard"
@@ -199,10 +201,10 @@ export const AppRoutes = () => {
           <Route
             path="/register/project"
             element={
-              <RoleProtectedRoute 
-                allowedRoles={['client', 'employer']}
+              <RoleProtectedRoute
+                allowedRoles={['client', 'employer', 'ba_pm']}
                 redirectTo="/projects"
-                errorMessage="Only clients and employers can post projects. Switch to a hiring role to post."
+                errorMessage="Only clients, employers, and BA/PMs can post projects. Switch to a hiring role to post."
               >
                 <RouteWrapper>
                   <RegisterProject />
@@ -213,10 +215,10 @@ export const AppRoutes = () => {
           <Route
             path="/post-job"
             element={
-              <RoleProtectedRoute 
-                allowedRoles={['employer', 'client']}
+              <RoleProtectedRoute
+                allowedRoles={['employer', 'client', 'ba_pm']}
                 redirectTo="/jobs"
-                errorMessage="Only employers and clients can post jobs. Switch to a hiring role to post."
+                errorMessage="Only employers, clients, and BA/PMs can post jobs. Switch to a hiring role to post."
               >
                 <RouteWrapper>
                   <PostJob />
@@ -254,7 +256,7 @@ export const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-          
+
           {/* 404 */}
           <Route path="*" element={<RouteWrapper><NotFound /></RouteWrapper>} />
         </Routes>

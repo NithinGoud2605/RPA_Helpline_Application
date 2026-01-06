@@ -1,13 +1,13 @@
-import { memo, useMemo, useState, useEffect } from 'react';
+import { memo, useMemo, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { 
+import {
   Briefcase, DollarSign, Clock, Star, ArrowRight, MapPin, Building2,
   CheckCircle, Calendar, Eye, Users, Target, Code, Plus, MessageSquare,
   FileText, Award, TrendingUp, ExternalLink, BarChart3, Filter
 } from 'lucide-react';
-import { projectApi } from '../../services/api';
+import { projectApi, freelancerApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 
@@ -16,25 +16,24 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 // ============================================================================
 const PostedProjectCard = memo(({ project }) => (
   <Card className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 group">
-    <CardContent className="p-5">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="flex-1">
-          <h4 className="font-display font-bold text-foreground tracking-wider mb-1 group-hover:text-primary transition-colors">
+    <CardContent className="p-3 md:p-5">
+      <div className="flex items-start justify-between gap-3 md:gap-4 mb-3 md:mb-4">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-display font-bold text-foreground tracking-wider mb-1 text-sm md:text-base group-hover:text-primary transition-colors truncate">
             {project.title}
           </h4>
-          <p className="text-xs text-muted-foreground font-mono">{project.budget} • {project.type}</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground font-mono truncate">{project.budget} • {project.type}</p>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-mono ${
-          project.status === 'ACTIVE' ? 'bg-green-500/20 text-green-500' :
+        <span className={`px-2 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-mono flex-shrink-0 ${project.status === 'ACTIVE' ? 'bg-green-500/20 text-green-500' :
           project.status === 'IN_PROGRESS' ? 'bg-secondary/20 text-secondary' :
-          project.status === 'REVIEW' ? 'bg-accent/20 text-accent' :
-          'bg-muted text-muted-foreground'
-        }`}>
+            project.status === 'REVIEW' ? 'bg-accent/20 text-accent' :
+              'bg-muted text-muted-foreground'
+          }`}>
           {project.status}
         </span>
       </div>
-      
-      <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+
+      <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-muted-foreground mb-3 md:mb-4">
         <span className="flex items-center gap-1">
           <Users className="w-3 h-3" />
           {project.proposals} proposals
@@ -43,51 +42,51 @@ const PostedProjectCard = memo(({ project }) => (
           <Eye className="w-3 h-3" />
           {project.views} views
         </span>
-        <span className="flex items-center gap-1">
+        <span className="hidden sm:flex items-center gap-1">
           <Clock className="w-3 h-3" />
           Posted {project.posted}
         </span>
       </div>
-      
+
       {project.assignee && (
-        <div className="p-3 rounded-lg bg-muted/50 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold">
+        <div className="p-2.5 md:p-3 rounded-lg bg-muted/50 mb-3 md:mb-4">
+          <div className="flex items-center gap-2.5 md:gap-3">
+            <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-[10px] md:text-xs font-bold flex-shrink-0">
               {project.assignee.name.charAt(0)}
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-display text-foreground">{project.assignee.name}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-display text-foreground truncate">{project.assignee.name}</p>
               <div className="flex items-center gap-1">
                 <Star className="w-3 h-3 text-nasa-gold fill-nasa-gold" />
-                <span className="text-xs text-muted-foreground">{project.assignee.rating}</span>
+                <span className="text-[10px] md:text-xs text-muted-foreground">{project.assignee.rating}</span>
               </div>
             </div>
-            <Button variant="ghost" size="sm" className="text-xs">
+            <Button variant="ghost" size="sm" className="text-xs min-h-[32px] hidden sm:flex">
               <MessageSquare className="w-3 h-3 mr-1" /> Chat
             </Button>
           </div>
         </div>
       )}
-      
-      <div className="flex items-center justify-between pt-4 border-t border-border/50">
+
+      <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-border/50">
         {project.progress !== undefined ? (
-          <div className="flex-1 mr-4">
+          <div className="flex-1 mr-3 md:mr-4">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-muted-foreground">Progress</span>
               <span className="text-primary font-mono">{project.progress}%</span>
             </div>
-            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-              <div 
+            <div className="h-1 md:h-1.5 rounded-full bg-muted overflow-hidden">
+              <div
                 className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
                 style={{ width: `${project.progress}%` }}
               />
             </div>
           </div>
         ) : (
-          <span className="text-xs text-muted-foreground">Deadline: {project.deadline}</span>
+          <span className="text-[10px] md:text-xs text-muted-foreground">Deadline: {project.deadline}</span>
         )}
         <Link to={`/projects/${project.id}`}>
-          <Button variant="outline" size="sm" className="font-mono text-xs tracking-wider">
+          <Button variant="outline" size="sm" className="font-mono text-xs tracking-wider min-h-[36px]">
             MANAGE
           </Button>
         </Link>
@@ -153,6 +152,41 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
+  const [recommendedTalent, setRecommendedTalent] = useState([]);
+  const [talentLoading, setTalentLoading] = useState(true);
+  const talentFetchRef = useRef(false);
+
+  // Fetch recommended talent
+  useEffect(() => {
+    if (talentFetchRef.current) return;
+    talentFetchRef.current = true;
+
+    const fetchTalent = async () => {
+      setTalentLoading(true);
+      try {
+        const response = await freelancerApi.getAll({ limit: 3, is_available: true });
+        const freelancers = response.freelancers || [];
+        const transformed = freelancers.map(f => ({
+          id: f.id,
+          name: f.full_name || 'Freelancer',
+          title: f.headline || 'RPA Developer',
+          rating: f.average_rating || 0,
+          completedProjects: f.total_projects || 0,
+          rate: f.hourly_rate ? `₹${f.hourly_rate}/hr` : 'Negotiable',
+          skills: f.skills?.map(s => s.skill?.name || s.name).filter(Boolean).slice(0, 5) || [],
+          available: f.is_available !== false,
+        }));
+        setRecommendedTalent(transformed);
+      } catch (error) {
+        console.error('Failed to fetch talent:', error);
+        setRecommendedTalent([]);
+      } finally {
+        setTalentLoading(false);
+      }
+    };
+
+    fetchTalent();
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -191,7 +225,7 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
           activeProjects: 0,
           completedProjects: 0
         };
-        
+
         for (const project of projectsResponse.projects || []) {
           if (project.status === 'open' || project.status === 'in_progress') {
             analyticsData.activeProjects++;
@@ -199,7 +233,7 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
             analyticsData.completedProjects++;
           }
           analyticsData.totalViews += project.views || 0;
-          
+
           try {
             const statsResponse = await projectApi.getApplicationStats(project.id);
             if (statsResponse.stats) {
@@ -225,47 +259,7 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
-  // Mock data for recommended talent
-  const recommendedTalent = useMemo(() => [
-    {
-      id: '1',
-      name: 'Alex Johnson',
-      title: 'Senior UiPath Developer',
-      rating: 4.9,
-      completedProjects: 47,
-      rate: '₹850/hr',
-      skills: ['UiPath', 'RE Framework', 'SQL', 'Python', 'APIs'],
-      available: true,
-    },
-    {
-      id: '2',
-      name: 'Maria Garcia',
-      title: 'AA Solution Architect',
-      rating: 5.0,
-      completedProjects: 32,
-      rate: '₹950/hr',
-      skills: ['Automation Anywhere', 'IQ Bot', 'Architecture', 'Training'],
-      available: true,
-    },
-    {
-      id: '3',
-      name: 'David Kim',
-      title: 'Blue Prism Expert',
-      rating: 4.8,
-      completedProjects: 28,
-      rate: '₹800/hr',
-      skills: ['Blue Prism', 'Digital Workers', 'API Integration'],
-      available: false,
-    },
-  ], []);
 
-  // Spending data
-  const spendingData = useMemo(() => ({
-    thisMonth: '₹1.25L',
-    lastMonth: '₹82,000',
-    totalSpent: '₹8.75L',
-    activeContracts: 5,
-  }), []);
 
   return (
     <div className="space-y-6">
@@ -275,11 +269,10 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 font-mono text-sm tracking-wider transition-colors border-b-2 ${
-              activeTab === tab.id
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
+            className={`px-4 py-2 font-mono text-sm tracking-wider transition-colors border-b-2 ${activeTab === tab.id
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
           >
             <div className="flex items-center gap-2">
               <tab.icon className="w-4 h-4" />
@@ -310,17 +303,17 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
                   </Button>
                 </Link>
               </div>
-              
+
               {projects.length > 0 ? (
                 <div className="grid lg:grid-cols-3 gap-4">
                   {projects.map((project) => (
-                    <PostedProjectCard 
-                      key={project.id} 
+                    <PostedProjectCard
+                      key={project.id}
                       project={{
                         ...project,
-                        budget: project.budget_min && project.budget_max 
+                        budget: project.budget_min && project.budget_max
                           ? `₹${project.budget_min.toLocaleString()} - ₹${project.budget_max.toLocaleString()}`
-                          : project.budget_min 
+                          : project.budget_min
                             ? `₹${project.budget_min.toLocaleString()}+`
                             : 'Not specified',
                         type: 'Fixed Price',
@@ -328,7 +321,7 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
                         views: project.views || 0,
                         posted: project.created_at ? new Date(project.created_at).toLocaleDateString() : 'Recently',
                         status: project.status?.toUpperCase() || 'ACTIVE'
-                      }} 
+                      }}
                     />
                   ))}
                 </div>
@@ -364,7 +357,7 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
                   </Button>
                 </div>
               </div>
-              
+
               {applications.length > 0 ? (
                 <div className="space-y-4">
                   {applications.map((application) => (
@@ -399,12 +392,11 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-mono ${
-                              application.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
+                            <span className={`px-2 py-1 rounded-full text-xs font-mono ${application.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
                               application.status === 'rejected' ? 'bg-red-500/20 text-red-500' :
-                              application.status === 'shortlisted' ? 'bg-blue-500/20 text-blue-500' :
-                              'bg-yellow-500/20 text-yellow-500'
-                            }`}>
+                                application.status === 'shortlisted' ? 'bg-blue-500/20 text-blue-500' :
+                                  'bg-yellow-500/20 text-yellow-500'
+                              }`}>
                               {application.status?.toUpperCase() || 'PENDING'}
                             </span>
                             <div className="flex items-center gap-2">
@@ -449,7 +441,7 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
                 <BarChart3 className="w-5 h-5 text-primary" />
                 ANALYTICS
               </h2>
-              
+
               <div className="grid md:grid-cols-4 gap-4">
                 <Card className="tech-panel border-border bg-card/50">
                   <CardContent className="p-4">
@@ -495,12 +487,28 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
               </Button>
             </Link>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-4">
-            {recommendedTalent.map((talent) => (
-              <TalentCard key={talent.id} talent={talent} />
-            ))}
-          </div>
+
+          {talentLoading ? (
+            <div className="flex justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          ) : recommendedTalent.length > 0 ? (
+            <div className="grid md:grid-cols-3 gap-4">
+              {recommendedTalent.map((talent) => (
+                <TalentCard key={talent.id} talent={talent} />
+              ))}
+            </div>
+          ) : (
+            <Card className="tech-panel border-border bg-card/50">
+              <CardContent className="p-8 text-center">
+                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">No freelancers available at the moment</p>
+                <Link to="/talent">
+                  <Button className="font-mono text-xs">BROWSE ALL TALENT</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
         </section>
       )}
     </div>

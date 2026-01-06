@@ -4,6 +4,7 @@ import { authenticateToken, optionalAuth, requireRole } from '../middleware/auth
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { projectValidation, paginationValidation, idValidation } from '../middleware/validate.js';
 import { PAGINATION, PROJECT_STATUS } from '../config/constants.js';
+import { notifyNewApplication, notifyApplicationStatusChange } from '../services/notificationService.js';
 
 const router = express.Router();
 
@@ -445,7 +446,7 @@ router.get('/:id', idValidation, optionalAuth, asyncHandler(async (req, res) => 
 }));
 
 // Create new project
-router.post('/', authenticateToken, requireRole('client', 'employer'), projectValidation, asyncHandler(async (req, res) => {
+router.post('/', authenticateToken, requireRole('client', 'employer', 'ba_pm'), projectValidation, asyncHandler(async (req, res) => {
   const { 
     title, 
     description, 
@@ -636,7 +637,7 @@ router.post('/:id/apply', authenticateToken, requireRole('freelancer', 'ba_pm', 
   // Check if project exists and is open
   const { data: project } = await supabaseAdmin
     .from('projects')
-    .select('id, status, client_id')
+    .select('id, status, client_id, title')
     .eq('id', id)
     .single();
 
@@ -683,6 +684,15 @@ router.post('/:id/apply', authenticateToken, requireRole('freelancer', 'ba_pm', 
     console.error('Error creating application:', error);
     return res.status(500).json({ error: 'Failed to submit application' });
   }
+
+  // Notify project owner about the new application
+  notifyNewApplication({
+    ownerId: project.client_id,
+    applicantId: req.userId,
+    itemId: id,
+    itemType: 'project',
+    itemTitle: project.title
+  }).catch(err => console.error('Failed to send application notification:', err));
 
   res.status(201).json({ message: 'Application submitted successfully', application });
 }));
@@ -745,7 +755,7 @@ router.put('/:id/applications/:applicationId', authenticateToken, requireRole('c
   // Verify the project exists and belongs to the user
   const { data: project, error: projectError } = await supabaseAdmin
     .from('projects')
-    .select('id, client_id')
+    .select('id, client_id, title')
     .eq('id', id)
     .single();
 
@@ -760,7 +770,7 @@ router.put('/:id/applications/:applicationId', authenticateToken, requireRole('c
   // Verify the application exists and belongs to this project
   const { data: application, error: appError } = await supabaseAdmin
     .from('project_applications')
-    .select('id, project_id')
+    .select('id, project_id, freelancer_id')
     .eq('id', applicationId)
     .eq('project_id', id)
     .single();
@@ -814,6 +824,18 @@ router.put('/:id/applications/:applicationId', authenticateToken, requireRole('c
   if (updateError) {
     console.error('Error updating application:', updateError);
     return res.status(500).json({ error: 'Failed to update application' });
+  }
+
+  // Notify applicant about status change
+  if (status) {
+    notifyApplicationStatusChange({
+      applicantId: application.freelancer_id,
+      status,
+      itemId: id,
+      itemType: 'project',
+      itemTitle: project.title,
+      fromUserId: req.userId
+    }).catch(err => console.error('Failed to send status change notification:', err));
   }
 
   res.json({ application: updatedApplication });

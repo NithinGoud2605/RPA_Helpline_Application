@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
+import {
   Search, Filter, MapPin, Building2, Clock, DollarSign, Star,
   ChevronDown, CheckCircle, ArrowRight, Eye, Users, Briefcase,
   SlidersHorizontal, X, Grid3X3, List, Zap, Award, Globe,
@@ -20,17 +20,15 @@ import { useDebounce } from '../hooks/useDebounce';
 const FilterPill = memo(({ label, active, onClick, count }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2 rounded-full text-sm font-mono transition-all ${
-      active
-        ? 'bg-primary text-white'
-        : 'tech-panel text-muted-foreground hover:text-foreground hover:border-secondary'
-    }`}
+    className={`px-4 py-2 rounded-full text-sm font-mono transition-all ${active
+      ? 'bg-primary text-white'
+      : 'tech-panel text-muted-foreground hover:text-foreground hover:border-secondary'
+      }`}
   >
     {label}
     {count !== undefined && (
-      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${
-        active ? 'bg-white/20' : 'bg-muted'
-      }`}>
+      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${active ? 'bg-white/20' : 'bg-muted'
+        }`}>
         {count}
       </span>
     )}
@@ -65,34 +63,32 @@ const ProjectCard = memo(({ project, viewMode }) => {
 
   if (viewMode === 'list') {
     return (
-      <Card 
+      <Card
         ref={cardRef}
-        className={`tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}
+        className={`tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
         onClick={() => navigate(`/projects/${project.id}`)}
         style={{
           transitionDelay: isVisible ? '0ms' : '100ms',
           willChange: isVisible ? 'auto' : 'opacity, transform',
         }}
       >
-        <CardContent className="p-6">
-          <div className="flex items-start gap-6">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6">
             {/* Company Logo */}
-            <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+            <div className="hidden md:flex w-16 h-16 rounded-xl bg-muted items-center justify-center flex-shrink-0">
               <Building2 className="w-8 h-8 text-muted-foreground" />
             </div>
-            
+
             {/* Main Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${
-                      project.urgency === 'HIGH' ? 'bg-primary/20 text-primary' : 
-                      project.urgency === 'MEDIUM' ? 'bg-accent/20 text-accent' : 
-                      'bg-secondary/20 text-secondary'
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${project.urgency === 'HIGH' ? 'bg-primary/20 text-primary' :
+                      project.urgency === 'MEDIUM' ? 'bg-accent/20 text-accent' :
+                        'bg-secondary/20 text-secondary'
+                      }`}>
                       {project.urgency} PRIORITY
                     </span>
                     {project.verified && (
@@ -106,10 +102,10 @@ const ProjectCard = memo(({ project, viewMode }) => {
                       </span>
                     )}
                   </div>
-                  <h3 className="text-lg font-display font-bold text-foreground tracking-wider group-hover:text-primary transition-colors">
+                  <h3 className="text-base md:text-lg font-display font-bold text-foreground tracking-wider group-hover:text-primary transition-colors">
                     {project.title}
                   </h3>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground mt-1">
                     <span className="flex items-center gap-1">
                       <Building2 className="w-3 h-3" />
                       {project.company}
@@ -124,30 +120,30 @@ const ProjectCard = memo(({ project, viewMode }) => {
                     </span>
                   </div>
                 </div>
-                
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xl font-display font-bold text-secondary">{project.budget}</p>
+
+                <div className="text-right flex-shrink-0 mt-2 md:mt-0">
+                  <p className="text-lg md:text-xl font-display font-bold text-secondary">{project.budget}</p>
                   <p className="text-xs text-muted-foreground font-mono">{project.type}</p>
                 </div>
               </div>
-              
+
               <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
-              
-              <div className="flex items-center justify-between">
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex flex-wrap gap-2">
-                  {project.skills.slice(0, 4).map((skill, i) => (
+                  {project.skills.slice(0, 3).map((skill, i) => (
                     <span key={i} className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-mono">
                       {skill}
                     </span>
                   ))}
-                  {project.skills.length > 4 && (
+                  {project.skills.length > 3 && (
                     <span className="px-2 py-1 text-muted-foreground text-xs">
-                      +{project.skills.length - 4} more
+                      +{project.skills.length - 3} more
                     </span>
                   )}
                 </div>
-                
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+
+                <div className="flex items-center gap-3 md:gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Users className="w-3 h-3" />
                     {project.proposals} proposals
@@ -168,11 +164,10 @@ const ProjectCard = memo(({ project, viewMode }) => {
 
   // Grid View
   return (
-    <Card 
+    <Card
       ref={cardRef}
-      className={`tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group h-full ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-      }`}
+      className={`tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group h-full ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}
       onClick={() => navigate(`/projects/${project.id}`)}
       style={{
         transitionDelay: isVisible ? '0ms' : '100ms',
@@ -182,11 +177,10 @@ const ProjectCard = memo(({ project, viewMode }) => {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${
-              project.urgency === 'HIGH' ? 'bg-primary/20 text-primary' : 
-              project.urgency === 'MEDIUM' ? 'bg-accent/20 text-accent' : 
-              'bg-secondary/20 text-secondary'
-            }`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${project.urgency === 'HIGH' ? 'bg-primary/20 text-primary' :
+              project.urgency === 'MEDIUM' ? 'bg-accent/20 text-accent' :
+                'bg-secondary/20 text-secondary'
+              }`}>
               {project.urgency}
             </span>
             {project.verified && (
@@ -195,7 +189,7 @@ const ProjectCard = memo(({ project, viewMode }) => {
           </div>
           <p className="text-lg font-display font-bold text-secondary">{project.budget}</p>
         </div>
-        
+
         <CardTitle className="text-base font-display tracking-wider group-hover:text-primary transition-colors line-clamp-2">
           {project.title}
         </CardTitle>
@@ -207,10 +201,10 @@ const ProjectCard = memo(({ project, viewMode }) => {
           {project.location}
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{project.description}</p>
-        
+
         <div className="flex flex-wrap gap-1 mb-4">
           {project.skills.slice(0, 3).map((skill, i) => (
             <span key={i} className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-mono">
@@ -221,7 +215,7 @@ const ProjectCard = memo(({ project, viewMode }) => {
             <span className="px-2 py-1 text-muted-foreground text-xs">+{project.skills.length - 3}</span>
           )}
         </div>
-        
+
         <div className="flex items-center justify-between pt-4 border-t border-border/50 text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
@@ -249,7 +243,7 @@ const PlatformFilter = memo(({ platforms, selected, onToggle }) => (
     <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">RPA PLATFORMS</p>
     <div className="space-y-1">
       {platforms.map((platform) => (
-        <label 
+        <label
           key={platform.id}
           className="flex items-center gap-3 p-2 rounded-lg hover:bg-card transition-colors cursor-pointer group"
         >
@@ -276,7 +270,7 @@ export const Projects = memo(() => {
   const navigate = useNavigate();
   const toast = useToast();
   const { user, role } = useAuthStore();
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('list');
   const [showFilters, setShowFilters] = useState(true);
@@ -284,10 +278,10 @@ export const Projects = memo(() => {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedUrgency, setSelectedUrgency] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
-  
+
   // Debounce search query
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
-  
+
   // API state
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -382,8 +376,8 @@ export const Projects = memo(() => {
 
     // Platform filter (client-side, backend already filters by technology)
     if (selectedPlatforms.length > 0) {
-      result = result.filter(p => 
-        selectedPlatforms.some(platform => 
+      result = result.filter(p =>
+        selectedPlatforms.some(platform =>
           p.skills.some(skill => skill.toLowerCase().includes(platform.toLowerCase()))
         )
       );
@@ -409,7 +403,7 @@ export const Projects = memo(() => {
 
   // Toggle platform filter
   const togglePlatform = useCallback((platformId) => {
-    setSelectedPlatforms(prev => 
+    setSelectedPlatforms(prev =>
       prev.includes(platformId)
         ? prev.filter(p => p !== platformId)
         : [...prev, platformId]
@@ -432,7 +426,7 @@ export const Projects = memo(() => {
       <div className="fixed inset-0 star-field opacity-40 pointer-events-none" />
       <div className="fixed inset-0 grid-overlay opacity-20 pointer-events-none" />
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
         <div className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -517,7 +511,7 @@ export const Projects = memo(() => {
 
           {/* Quick Filters */}
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider mr-1">TYPE:</span>
+            <span className="text-[10px] md:text-xs font-mono text-muted-foreground uppercase tracking-wider mr-1">TYPE:</span>
             {['all', 'fixed', 'hourly'].map((type) => (
               <FilterPill
                 key={type}
@@ -526,10 +520,10 @@ export const Projects = memo(() => {
                 onClick={() => setSelectedType(type)}
               />
             ))}
-            
-            <div className="w-px h-6 bg-border mx-2" />
-            
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider mr-2">URGENCY:</span>
+
+            <div className="w-px h-6 bg-border mx-1 md:mx-2 hidden sm:block" />
+
+            <span className="text-[10px] md:text-xs font-mono text-muted-foreground uppercase tracking-wider mr-1 md:mr-2 w-full sm:w-auto mt-2 sm:mt-0">URGENCY:</span>
             {['all', 'HIGH', 'MEDIUM', 'LOW'].map((urgency) => (
               <FilterPill
                 key={urgency}
@@ -562,9 +556,9 @@ export const Projects = memo(() => {
                   selected={selectedPlatforms}
                   onToggle={togglePlatform}
                 />
-                
+
                 <div className="my-6 border-t border-border" />
-                
+
                 {/* Budget Range */}
                 <div>
                   <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">BUDGET RANGE</p>
@@ -577,9 +571,9 @@ export const Projects = memo(() => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="my-6 border-t border-border" />
-                
+
                 {/* Project Duration */}
                 <div>
                   <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">DURATION</p>
@@ -654,9 +648,9 @@ export const Projects = memo(() => {
             {/* Load More / Pagination */}
             {!loading && filteredProjects.length > 0 && pagination.totalPages > pagination.page && (
               <div className="mt-6 text-center">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
+                <Button
+                  variant="outline"
+                  size="lg"
                   className="font-mono tracking-wider"
                   onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                 >

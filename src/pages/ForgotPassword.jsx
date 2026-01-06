@@ -84,18 +84,18 @@ export const ForgotPassword = memo(() => {
     setLoading(true);
     try {
       const response = await authApi.resetPassword(email, password, null, profileData);
-      
+
       if (response.requiresProfileDetails || (error?.data?.requiresProfileDetails)) {
         // Profile doesn't exist, need to collect details
         setStep('profile');
         toast.info('Please provide your profile details to complete account setup');
         return;
       }
-      
+
       if (response.token && response.refreshToken) {
         // Auto-login after password reset
         tokenManager.setTokens(response.token, response.refreshToken);
-        
+
         // Update auth store - refresh user data
         const authStore = useAuthStore.getState();
         if (authStore.refreshUser) {
@@ -104,7 +104,7 @@ export const ForgotPassword = memo(() => {
           // Fallback: initialize auth to load user
           await authStore.initialize();
         }
-        
+
         toast.success('Password reset successfully! You have been logged in.');
         navigate('/dashboard');
       } else {
@@ -143,11 +143,11 @@ export const ForgotPassword = memo(() => {
     setLoading(true);
     try {
       const response = await authApi.resetPassword(email, password, null, profileData);
-      
+
       if (response.token && response.refreshToken) {
         // Auto-login after profile creation
         tokenManager.setTokens(response.token, response.refreshToken);
-        
+
         // Update auth store
         const authStore = useAuthStore.getState();
         if (authStore.refreshUser) {
@@ -155,7 +155,7 @@ export const ForgotPassword = memo(() => {
         } else {
           await authStore.initialize();
         }
-        
+
         toast.success('Account created successfully! You have been logged in.');
         navigate('/profile-setup');
       }
@@ -169,7 +169,7 @@ export const ForgotPassword = memo(() => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background pt-16 md:pt-20 pb-8 px-4 md:px-6">
       <Container>
         <div className="max-w-md mx-auto">
           {/* Back Link */}
@@ -341,9 +341,8 @@ export const ForgotPassword = memo(() => {
                         setProfileData(prev => ({ ...prev, user_type: e.target.value }));
                         if (errors.user_type) setErrors(prev => ({ ...prev, user_type: '' }));
                       }}
-                      className={`w-full px-3 py-2 bg-background border rounded-lg text-foreground text-sm ${
-                        errors.user_type ? 'border-destructive' : 'border-border'
-                      }`}
+                      className={`w-full px-3 py-2 bg-background border rounded-lg text-foreground text-sm ${errors.user_type ? 'border-destructive' : 'border-border'
+                        }`}
                     >
                       <option value="">Select user type</option>
                       <option value="freelancer">RPA Freelancer</option>

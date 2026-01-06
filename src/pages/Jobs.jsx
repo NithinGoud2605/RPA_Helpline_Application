@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
+import {
   Search, Filter, MapPin, Building2, Clock, DollarSign, Star,
   ChevronDown, CheckCircle, ArrowRight, Eye, Users, Briefcase,
   SlidersHorizontal, X, Grid3X3, List, Zap, Award, Globe,
@@ -21,17 +21,15 @@ import { useDebounce } from '../hooks/useDebounce';
 const FilterPill = memo(({ label, active, onClick, count }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2 rounded-full text-sm font-mono transition-all ${
-      active
+    className={`px-4 py-2 rounded-full text-sm font-mono transition-all ${active
         ? 'bg-primary text-white'
         : 'tech-panel text-muted-foreground hover:text-foreground hover:border-secondary'
-    }`}
+      }`}
   >
     {label}
     {count !== undefined && (
-      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${
-        active ? 'bg-white/20' : 'bg-muted'
-      }`}>
+      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${active ? 'bg-white/20' : 'bg-muted'
+        }`}>
         {count}
       </span>
     )}
@@ -54,17 +52,17 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
 
   if (viewMode === 'list') {
     return (
-      <Card 
+      <Card
         className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group"
         onClick={() => navigate(`/jobs/${job.id}`)}
       >
-        <CardContent className="p-6">
-          <div className="flex items-start gap-6">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6">
             {/* Company Logo */}
-            <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+            <div className="hidden md:flex w-16 h-16 rounded-xl bg-muted items-center justify-center flex-shrink-0">
               <Building2 className="w-8 h-8 text-muted-foreground" />
             </div>
-            
+
             {/* Main Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4 mb-3">
@@ -86,7 +84,7 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
                       </span>
                     )}
                   </div>
-                  <h3 className="text-lg font-display font-bold text-foreground tracking-wider group-hover:text-primary transition-colors">
+                  <h3 className="text-base md:text-lg font-display font-bold text-foreground tracking-wider group-hover:text-primary transition-colors">
                     {job.title}
                   </h3>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
@@ -102,7 +100,7 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleSave}
@@ -112,10 +110,10 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
                   </button>
                 </div>
               </div>
-              
+
               <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{job.description}</p>
-              
-              <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
+
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4 text-xs md:text-sm">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <MapPin className="w-4 h-4" />
                   {job.location}
@@ -133,7 +131,7 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
                   {job.experience}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex flex-wrap gap-2">
                   {job.skills.slice(0, 4).map((skill, i) => (
@@ -147,9 +145,9 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
                     </span>
                   )}
                 </div>
-                
-                <div className="flex items-center gap-4">
-                  <p className="text-xl font-display font-bold text-secondary">
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
+                  <p className="text-lg md:text-xl font-display font-bold text-secondary">
                     {job.salary?.includes('₹') ? job.salary : `₹${job.salary || 'Not specified'}`}
                   </p>
                   <Link to={`/jobs/${job.id}`} onClick={(e) => e.stopPropagation()}>
@@ -159,7 +157,7 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
                   </Link>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Users className="w-3 h-3" />
@@ -179,7 +177,7 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
 
   // Grid View
   return (
-    <Card 
+    <Card
       className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group h-full"
       onClick={() => navigate(`/jobs/${job.id}`)}
     >
@@ -204,7 +202,7 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
             <Heart className={`w-4 h-4 ${saved ? 'fill-primary' : ''}`} />
           </button>
         </div>
-        
+
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
             <Building2 className="w-5 h-5 text-muted-foreground" />
@@ -219,12 +217,12 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
             )}
           </div>
         </div>
-        
+
         <CardTitle className="text-base font-display tracking-wider group-hover:text-primary transition-colors line-clamp-2">
           {job.title}
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         <div className="flex flex-wrap items-center gap-2 mb-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
@@ -236,7 +234,7 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
             {job.workType}
           </span>
         </div>
-        
+
         <div className="flex flex-wrap gap-1 mb-4">
           {job.skills.slice(0, 3).map((skill, i) => (
             <span key={i} className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-mono">
@@ -247,11 +245,11 @@ const JobCard = memo(({ job, viewMode, onSave, saved = false }) => {
             <span className="px-2 py-1 text-muted-foreground text-xs">+{job.skills.length - 3}</span>
           )}
         </div>
-        
+
         <p className="text-lg font-display font-bold text-secondary mb-4">
           {job.salary?.includes('₹') ? job.salary : `₹${job.salary || 'Not specified'}`}
         </p>
-        
+
         <div className="flex items-center justify-between pt-4 border-t border-border/50 text-xs text-muted-foreground">
           <span>{job.posted}</span>
           <span className="flex items-center gap-1">
@@ -272,7 +270,7 @@ export const Jobs = memo(() => {
   const navigate = useNavigate();
   const toast = useToast();
   const { user, role } = useAuthStore();
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [locationQuery, setLocationQuery] = useState('');
   const [viewMode, setViewMode] = useState('list');
@@ -282,11 +280,11 @@ export const Jobs = memo(() => {
   const [selectedExperience, setSelectedExperience] = useState('all');
   const [savedJobs, setSavedJobs] = useState([]);
   const [sortBy, setSortBy] = useState('newest');
-  
+
   // Debounce search queries
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const debouncedLocationQuery = useDebounce(locationQuery, 500);
-  
+
   // API state
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -350,9 +348,9 @@ export const Jobs = memo(() => {
       workType: job.is_remote ? 'Remote' : 'On-site',
       employmentType: job.job_type?.replace('_', '-') || 'Full-time',
       experience: 'Not specified', // Backend doesn't have this field yet
-      salary: job.salary_min && job.salary_max 
+      salary: job.salary_min && job.salary_max
         ? `₹${job.salary_min.toLocaleString()} - ₹${job.salary_max.toLocaleString()}`
-        : job.salary_min 
+        : job.salary_min
           ? `₹${job.salary_min.toLocaleString()}+`
           : 'Not specified',
       description: job.description || '',
@@ -387,7 +385,7 @@ export const Jobs = memo(() => {
 
   // Toggle save job
   const toggleSaveJob = useCallback((jobId) => {
-    setSavedJobs(prev => 
+    setSavedJobs(prev =>
       prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
     );
   }, []);
@@ -409,7 +407,7 @@ export const Jobs = memo(() => {
       <div className="fixed inset-0 star-field opacity-40 pointer-events-none" />
       <div className="fixed inset-0 grid-overlay opacity-20 pointer-events-none" />
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
         <div className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -418,7 +416,7 @@ export const Jobs = memo(() => {
                 <Briefcase className="w-3 h-3 text-secondary" />
                 <span className="text-xs font-mono text-secondary tracking-wider">CAREER OPPORTUNITIES</span>
               </div>
-              <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-wider">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-foreground tracking-wider">
                 RPA <span className="text-primary">JOB BOARD</span>
               </h1>
             </div>
@@ -500,7 +498,7 @@ export const Jobs = memo(() => {
 
           {/* Quick Filters */}
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider mr-1">WORK:</span>
+            <span className="text-[10px] md:text-xs font-mono text-muted-foreground uppercase tracking-wider mr-1">WORK:</span>
             {['all', 'Remote', 'Hybrid', 'On-site'].map((type) => (
               <FilterPill
                 key={type}
@@ -509,10 +507,10 @@ export const Jobs = memo(() => {
                 onClick={() => setSelectedWorkType(type)}
               />
             ))}
-            
-            <div className="w-px h-6 bg-border mx-2" />
-            
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider mr-1">TYPE:</span>
+
+            <div className="w-px h-6 bg-border mx-1 md:mx-2 hidden sm:block" />
+
+            <span className="text-[10px] md:text-xs font-mono text-muted-foreground uppercase tracking-wider mr-1 w-full sm:w-auto mt-2 sm:mt-0">TYPE:</span>
             {['all', 'Full-time', 'Contract', 'Part-time'].map((type) => (
               <FilterPill
                 key={type}
@@ -562,9 +560,9 @@ export const Jobs = memo(() => {
         ) : filteredJobs.length > 0 ? (
           <div className={viewMode === 'grid' ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
             {filteredJobs.map((job) => (
-              <JobCard 
-                key={job.id} 
-                job={job} 
+              <JobCard
+                key={job.id}
+                job={job}
                 viewMode={viewMode}
                 onSave={toggleSaveJob}
                 saved={savedJobs.includes(job.id)}
@@ -587,9 +585,9 @@ export const Jobs = memo(() => {
         {/* Load More / Pagination */}
         {!loading && filteredJobs.length > 0 && pagination.totalPages > pagination.page && (
           <div className="mt-6 text-center">
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               className="font-mono tracking-wider"
               onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
             >

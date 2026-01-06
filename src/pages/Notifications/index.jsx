@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { notificationApi } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../../hooks/useToast';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { Container } from '../../components/layout/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -17,17 +18,34 @@ import {
 // ============================================================================
 const getNotificationConfig = (type) => {
   const configs = {
-    'new_project': { icon: Briefcase, color: 'bg-primary/10 text-primary' },
-    'new_job': { icon: Briefcase, color: 'bg-secondary/10 text-secondary' },
-    'application_received': { icon: User, color: 'bg-green-500/10 text-green-500' },
-    'application_viewed': { icon: Eye, color: 'bg-blue-500/10 text-blue-500' },
-    'application_status': { icon: CheckCircle, color: 'bg-accent/10 text-accent' },
-    'new_message': { icon: MessageSquare, color: 'bg-purple-500/10 text-purple-500' },
-    'profile_view': { icon: Eye, color: 'bg-cyan-500/10 text-cyan-500' },
-    'new_review': { icon: Star, color: 'bg-yellow-500/10 text-yellow-500' },
-    'payment': { icon: DollarSign, color: 'bg-green-500/10 text-green-500' },
-    'reminder': { icon: Calendar, color: 'bg-orange-500/10 text-orange-500' },
-    'alert': { icon: AlertCircle, color: 'bg-red-500/10 text-red-500' },
+    // Applications
+    new_application: { icon: User, color: 'bg-green-500/10 text-green-500' },
+    application_viewed: { icon: Eye, color: 'bg-blue-500/10 text-blue-500' },
+    application_shortlisted: { icon: CheckCircle, color: 'bg-emerald-500/10 text-emerald-500' },
+    application_accepted: { icon: CheckCircle, color: 'bg-accent/10 text-accent' },
+    application_rejected: { icon: AlertCircle, color: 'bg-red-500/10 text-red-500' },
+    application_status: { icon: CheckCircle, color: 'bg-accent/10 text-accent' },
+
+    // Projects & jobs
+    project_posted: { icon: Briefcase, color: 'bg-primary/10 text-primary' },
+    project_updated: { icon: Briefcase, color: 'bg-blue-500/10 text-blue-500' },
+    project_completed: { icon: CheckCircle, color: 'bg-emerald-500/10 text-emerald-500' },
+    job_posted: { icon: Briefcase, color: 'bg-secondary/10 text-secondary' },
+    job_closed: { icon: AlertCircle, color: 'bg-orange-500/10 text-orange-500' },
+
+    // Messages
+    new_message: { icon: MessageSquare, color: 'bg-purple-500/10 text-purple-500' },
+
+    // Reviews
+    new_review: { icon: Star, color: 'bg-yellow-500/10 text-yellow-500' },
+
+    // Payments
+    payment_received: { icon: DollarSign, color: 'bg-green-500/10 text-green-500' },
+    invoice_sent: { icon: DollarSign, color: 'bg-amber-500/10 text-amber-500' },
+
+    // System
+    profile_verified: { icon: CheckCircle, color: 'bg-cyan-500/10 text-cyan-500' },
+    system_announcement: { icon: Bell, color: 'bg-muted text-muted-foreground' },
   };
   return configs[type] || { icon: Bell, color: 'bg-muted text-muted-foreground' };
 };
@@ -52,15 +70,14 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
   return (
     <div
       onClick={handleClick}
-      className={`p-4 border-b border-border/50 cursor-pointer transition-all hover:bg-card group ${
-        !notification.is_read ? 'bg-primary/5' : ''
-      }`}
+      className={`p-4 border-b border-border/50 cursor-pointer transition-all hover:bg-card group ${!notification.is_read ? 'bg-primary/5' : ''
+        }`}
     >
       <div className="flex items-start gap-4">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${config.color}`}>
           <Icon className="w-5 h-5" />
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -73,12 +90,12 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
                 {notification.message || notification.content}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                {notification.created_at 
+                {notification.created_at
                   ? new Date(notification.created_at).toLocaleString()
                   : ''}
               </p>
             </div>
-            
+
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               {!notification.is_read && (
                 <button
@@ -105,7 +122,7 @@ const NotificationItem = memo(({ notification, onMarkRead, onDelete }) => {
             </div>
           </div>
         </div>
-        
+
         {!notification.is_read && (
           <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
         )}
@@ -122,6 +139,7 @@ export const Notifications = memo(() => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const toast = useToast();
+  const { decrementNotificationCount, clearNotificationCount, refresh: refreshNotifications } = useNotifications();
 
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -154,45 +172,65 @@ export const Notifications = memo(() => {
   }, [isAuthenticated]);
 
   const handleMarkRead = useCallback(async (id) => {
+    // Find the notification to check if it's unread
+    const notification = notifications.find(n => n.id === id);
+    const wasUnread = notification && !notification.is_read;
+
     try {
       await notificationApi.markAsRead(id);
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, is_read: true } : n)
       );
+      // Update navbar badge immediately
+      if (wasUnread) {
+        decrementNotificationCount();
+      }
     } catch (error) {
       toast.error('Failed to mark as read');
     }
-  }, [toast]);
+  }, [toast, notifications, decrementNotificationCount]);
 
   const handleDelete = useCallback(async (id) => {
+    // Find the notification to check if it's unread
+    const notification = notifications.find(n => n.id === id);
+    const wasUnread = notification && !notification.is_read;
+
     try {
       await notificationApi.delete(id);
       setNotifications(prev => prev.filter(n => n.id !== id));
+      // Update navbar badge if we deleted an unread notification
+      if (wasUnread) {
+        decrementNotificationCount();
+      }
       toast.success('Notification deleted');
     } catch (error) {
       toast.error('Failed to delete notification');
     }
-  }, [toast]);
+  }, [toast, notifications, decrementNotificationCount]);
 
   const handleMarkAllRead = useCallback(async () => {
     try {
       await notificationApi.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      // Clear navbar badge immediately
+      clearNotificationCount();
       toast.success('All notifications marked as read');
     } catch (error) {
       toast.error('Failed to mark all as read');
     }
-  }, [toast]);
+  }, [toast, clearNotificationCount]);
 
   const handleDeleteAllRead = useCallback(async () => {
     try {
       await notificationApi.deleteAllRead();
       setNotifications(prev => prev.filter(n => !n.is_read));
+      // Refresh counts to stay in sync
+      refreshNotifications();
       toast.success('Read notifications deleted');
     } catch (error) {
       toast.error('Failed to delete read notifications');
     }
-  }, [toast]);
+  }, [toast, refreshNotifications]);
 
   // Filter notifications
   const filteredNotifications = notifications.filter(n => {
@@ -215,16 +253,16 @@ export const Notifications = memo(() => {
         </Link>
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <Bell className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center">
+              <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-display font-bold text-foreground tracking-wider">
+              <h1 className="text-xl sm:text-2xl font-display font-bold text-foreground tracking-wider">
                 NOTIFICATIONS
               </h1>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
               </p>
             </div>
@@ -246,24 +284,22 @@ export const Notifications = memo(() => {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-full text-sm font-mono transition-all ${
-              filter === 'all'
-                ? 'bg-primary text-white'
-                : 'tech-panel text-muted-foreground hover:text-foreground'
-            }`}
+            className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-mono transition-all ${filter === 'all'
+              ? 'bg-primary text-white'
+              : 'tech-panel text-muted-foreground hover:text-foreground'
+              }`}
           >
             All ({notifications.length})
           </button>
           <button
             onClick={() => setFilter('unread')}
-            className={`px-4 py-2 rounded-full text-sm font-mono transition-all ${
-              filter === 'unread'
-                ? 'bg-primary text-white'
-                : 'tech-panel text-muted-foreground hover:text-foreground'
-            }`}
+            className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-mono transition-all ${filter === 'unread'
+              ? 'bg-primary text-white'
+              : 'tech-panel text-muted-foreground hover:text-foreground'
+              }`}
           >
             Unread ({unreadCount})
           </button>
@@ -303,7 +339,7 @@ export const Notifications = memo(() => {
                 No Notifications
               </h3>
               <p className="text-muted-foreground">
-                {filter === 'unread' 
+                {filter === 'unread'
                   ? "You're all caught up!"
                   : "You don't have any notifications yet."}
               </p>
@@ -316,5 +352,6 @@ export const Notifications = memo(() => {
 });
 
 Notifications.displayName = 'Notifications';
+
 
 

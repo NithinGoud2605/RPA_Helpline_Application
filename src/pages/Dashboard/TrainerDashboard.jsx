@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { 
-  GraduationCap, DollarSign, Clock, Star, ArrowRight, Users, 
+import {
+  GraduationCap, DollarSign, Clock, Star, ArrowRight, Users,
   CheckCircle, Calendar, Eye, TrendingUp, Play, BookOpen,
   Award, ExternalLink, Video, FileText, Plus, Loader2
 } from 'lucide-react';
@@ -16,44 +16,43 @@ import { useToast } from '../../hooks/useToast';
 // ============================================================================
 const CourseCard = memo(({ course }) => (
   <Card className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 group">
-    <CardContent className="p-5">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${
-              course.status === 'active' ? 'bg-green-500/20 text-green-500' :
+    <CardContent className="p-3 md:p-5">
+      <div className="flex items-start justify-between gap-3 md:gap-4 mb-3 md:mb-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+            <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-mono ${course.status === 'active' ? 'bg-green-500/20 text-green-500' :
               course.status === 'draft' ? 'bg-accent/20 text-accent' :
-              'bg-secondary/20 text-secondary'
-            }`}>
+                'bg-secondary/20 text-secondary'
+              }`}>
               {course.status?.toUpperCase() || 'ACTIVE'}
             </span>
             {course.average_rating >= 4.5 && (
-              <span className="flex items-center gap-1 text-xs text-nasa-gold">
+              <span className="flex items-center gap-1 text-[10px] md:text-xs text-nasa-gold">
                 <Award className="w-3 h-3" /> TOP RATED
               </span>
             )}
           </div>
-          <h4 className="font-display font-bold text-foreground tracking-wider mb-1 group-hover:text-primary transition-colors line-clamp-2">
+          <h4 className="font-display font-bold text-foreground tracking-wider mb-1 text-sm md:text-base group-hover:text-primary transition-colors line-clamp-2">
             {course.title}
           </h4>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[10px] md:text-xs text-muted-foreground truncate">
             {course.technologies?.slice(0, 2).join(' • ') || 'RPA'} • {course.level?.replace('_', ' ') || 'All Levels'}
           </p>
         </div>
         {course.thumbnail_url ? (
-          <img 
-            src={course.thumbnail_url} 
+          <img
+            src={course.thumbnail_url}
             alt={course.title}
-            className="w-16 h-16 rounded-xl object-cover"
+            className="w-12 h-12 md:w-16 md:h-16 rounded-xl object-cover flex-shrink-0"
           />
         ) : (
-          <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center">
-            <Play className="w-8 h-8 text-muted-foreground" />
+          <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+            <Play className="w-6 h-6 md:w-8 md:h-8 text-muted-foreground" />
           </div>
         )}
       </div>
-      
-      <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+
+      <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-muted-foreground mb-3 md:mb-4">
         <span className="flex items-center gap-1">
           <Users className="w-3 h-3" />
           {course.enrolled_count || 0} students
@@ -64,18 +63,18 @@ const CourseCard = memo(({ course }) => (
             {course.average_rating?.toFixed(1) || '0.0'}
           </span>
         )}
-        <span className="flex items-center gap-1">
+        <span className="hidden sm:flex items-center gap-1">
           <Clock className="w-3 h-3" />
           {course.duration || 'Flexible'}
         </span>
       </div>
-      
-      <div className="flex items-center justify-between pt-4 border-t border-border/50">
-        <span className="text-lg font-display font-bold text-secondary">
+
+      <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-border/50">
+        <span className="text-base md:text-lg font-display font-bold text-secondary">
           {course.price === 0 ? 'FREE' : `₹${course.price?.toLocaleString() || 0}`}
         </span>
         <Link to={`/courses/${course.id}/edit`}>
-          <Button variant="outline" size="sm" className="font-mono text-xs tracking-wider">
+          <Button variant="outline" size="sm" className="font-mono text-xs tracking-wider min-h-[36px]">
             MANAGE COURSE
           </Button>
         </Link>
@@ -135,7 +134,7 @@ EmptyState.displayName = 'EmptyState';
 // ============================================================================
 export const TrainerDashboard = memo(() => {
   const toast = useToast();
-  
+
   const [courses, setCourses] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -151,17 +150,17 @@ export const TrainerDashboard = memo(() => {
     try {
       // Fetch trainer's programs
       const programsResponse = await trainingApi.getMyPrograms({ limit: 6 });
-      
+
       if (programsResponse.programs) {
         setCourses(programsResponse.programs);
-        
+
         // Calculate stats from courses
         const totalStudents = programsResponse.programs.reduce((sum, c) => sum + (c.enrolled_count || 0), 0);
         const totalRevenue = programsResponse.programs.reduce((sum, c) => sum + ((c.price || 0) * (c.enrolled_count || 0)), 0);
         const ratingsSum = programsResponse.programs.reduce((sum, c) => sum + (c.average_rating || 0), 0);
         const ratedCourses = programsResponse.programs.filter(c => c.average_rating > 0).length;
         const activeCourses = programsResponse.programs.filter(c => c.status === 'active').length;
-        
+
         setStats({
           totalStudents,
           totalRevenue,
@@ -169,7 +168,7 @@ export const TrainerDashboard = memo(() => {
           activeCourses,
         });
       }
-      
+
       // Try to fetch recent enrollments - this might not be implemented yet
       try {
         const enrollmentsResponse = await trainingApi.getMyEnrollments({ limit: 5 });
@@ -180,18 +179,18 @@ export const TrainerDashboard = memo(() => {
         // Enrollments endpoint might not exist yet, that's okay
         console.log('Enrollments not available:', err.message);
       }
-      
+
     } catch (error) {
       console.error('Failed to fetch trainer data:', error);
-      toast.error('Failed to load dashboard data');
+      // Don't use toast here to avoid dependency issues
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []); // Empty dependency array - fetchData is stable
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps - Run once on mount
 
   const formatCurrency = (amount) => {
     if (amount >= 100000) {
@@ -281,9 +280,9 @@ export const TrainerDashboard = memo(() => {
             </Link>
           </div>
         </div>
-        
+
         {courses.length === 0 ? (
-          <EmptyState 
+          <EmptyState
             icon={BookOpen}
             title="No courses yet"
             description="Create your first course to start teaching and earning."
@@ -307,11 +306,11 @@ export const TrainerDashboard = memo(() => {
             RECENT ENROLLMENTS
           </h2>
         </div>
-        
+
         <Card className="tech-panel border-border bg-card/50">
           <CardContent className="p-4">
             {enrollments.length === 0 ? (
-              <EmptyState 
+              <EmptyState
                 icon={Users}
                 title="No enrollments yet"
                 description="Students will appear here when they enroll in your courses."
@@ -346,7 +345,7 @@ export const TrainerDashboard = memo(() => {
               </CardContent>
             </Card>
           </Link>
-          
+
           <Link to="/courses">
             <Card className="tech-panel border-border bg-card/50 hover-lift cursor-pointer group h-full">
               <CardContent className="p-6 flex items-center gap-4">
@@ -363,7 +362,7 @@ export const TrainerDashboard = memo(() => {
               </CardContent>
             </Card>
           </Link>
-          
+
           <Link to="/jobs">
             <Card className="tech-panel border-border bg-card/50 hover-lift cursor-pointer group h-full">
               <CardContent className="p-6 flex items-center gap-4">

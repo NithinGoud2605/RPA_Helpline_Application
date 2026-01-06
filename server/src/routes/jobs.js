@@ -4,6 +4,7 @@ import { authenticateToken, optionalAuth, requireRole } from '../middleware/auth
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { paginationValidation, idValidation } from '../middleware/validate.js';
 import { PAGINATION } from '../config/constants.js';
+import { notifyNewApplication, notifyApplicationStatusChange } from '../services/notificationService.js';
 
 const router = express.Router();
 
@@ -437,7 +438,7 @@ router.get('/:id', idValidation, asyncHandler(async (req, res) => {
 }));
 
 // Create job posting
-router.post('/', authenticateToken, requireRole('employer', 'client'), asyncHandler(async (req, res) => {
+router.post('/', authenticateToken, requireRole('employer', 'client', 'ba_pm'), asyncHandler(async (req, res) => {
   const {
     title,
     description,
@@ -657,7 +658,7 @@ router.post('/:id/apply', authenticateToken, requireRole('job_seeker', 'jobseeke
   // Check if job exists and is active
   const { data: job } = await supabaseAdmin
     .from('jobs')
-    .select('id, status, employer_id')
+    .select('id, status, employer_id, title')
     .eq('id', id)
     .single();
 
@@ -699,6 +700,15 @@ router.post('/:id/apply', authenticateToken, requireRole('job_seeker', 'jobseeke
     console.error('Error applying to job:', error);
     return res.status(500).json({ error: 'Failed to submit application' });
   }
+
+  // Notify employer about the new application
+  notifyNewApplication({
+    ownerId: job.employer_id,
+    applicantId: req.userId,
+    itemId: id,
+    itemType: 'job',
+    itemTitle: job.title
+  }).catch(err => console.error('Failed to send application notification:', err));
 
   res.status(201).json({ message: 'Application submitted successfully', application });
 }));
@@ -760,7 +770,7 @@ router.put('/:id/applications/:applicationId', authenticateToken, requireRole('e
   // Verify the job exists and belongs to the user
   const { data: job, error: jobError } = await supabaseAdmin
     .from('jobs')
-    .select('id, employer_id')
+    .select('id, employer_id, title')
     .eq('id', id)
     .single();
 
@@ -775,7 +785,7 @@ router.put('/:id/applications/:applicationId', authenticateToken, requireRole('e
   // Verify the application exists and belongs to this job
   const { data: application, error: appError } = await supabaseAdmin
     .from('job_applications')
-    .select('id, job_id')
+    .select('id, job_id, applicant_id')
     .eq('id', applicationId)
     .eq('job_id', id)
     .single();
@@ -829,6 +839,18 @@ router.put('/:id/applications/:applicationId', authenticateToken, requireRole('e
   if (updateError) {
     console.error('Error updating application:', updateError);
     return res.status(500).json({ error: 'Failed to update application' });
+  }
+
+  // Notify applicant about status change
+  if (status) {
+    notifyApplicationStatusChange({
+      applicantId: application.applicant_id,
+      status,
+      itemId: id,
+      itemType: 'job',
+      itemTitle: job.title,
+      fromUserId: req.userId
+    }).catch(err => console.error('Failed to send status change notification:', err));
   }
 
   res.json({ application: updatedApplication });

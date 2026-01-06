@@ -31,3 +31,4 @@ CREATE INDEX idx_verification_requests_status ON verification_requests(status);
 CREATE INDEX idx_verification_requests_pending ON verification_requests(status, created_at) WHERE status = 'pending';
 
 
+

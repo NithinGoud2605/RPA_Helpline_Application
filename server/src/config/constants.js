@@ -216,6 +216,7 @@ export const NOTIFICATION_TYPES = {
   APPLICATION_SHORTLISTED: 'application_shortlisted',
   APPLICATION_ACCEPTED: 'application_accepted',
   APPLICATION_REJECTED: 'application_rejected',
+  APPLICATION_STATUS: 'application_status',
   
   // Projects
   PROJECT_POSTED: 'project_posted',

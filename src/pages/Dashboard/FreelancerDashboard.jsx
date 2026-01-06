@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { statsApi, profileApi, projectApi } from '../../services/api';
-import { 
+import {
   Briefcase, Clock, Star, ArrowRight, MapPin, Building2,
   CheckCircle, Calendar, Eye, Target, Code, Zap, Award,
   ExternalLink, BookOpen, Users, FileText
@@ -15,49 +15,50 @@ import {
 // ============================================================================
 const ProjectCard = memo(({ project }) => (
   <Card className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 group">
-    <CardHeader className="pb-3">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-mono ${project.urgency === 'HIGH' ? 'bg-primary/20 text-primary' : project.urgency === 'MEDIUM' ? 'bg-accent/20 text-accent' : 'bg-secondary/20 text-secondary'}`}>
+    <CardHeader className="pb-2 md:pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+            <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-mono ${project.urgency === 'HIGH' ? 'bg-primary/20 text-primary' : project.urgency === 'MEDIUM' ? 'bg-accent/20 text-accent' : 'bg-secondary/20 text-secondary'}`}>
               {project.urgency} PRIORITY
             </span>
             {project.verified && (
-              <span className="flex items-center gap-1 text-xs text-green-500">
+              <span className="flex items-center gap-1 text-[10px] md:text-xs text-green-500">
                 <CheckCircle className="w-3 h-3" /> VERIFIED
               </span>
             )}
           </div>
-          <CardTitle className="text-base font-display tracking-wider group-hover:text-primary transition-colors">
+          <CardTitle className="text-sm md:text-base font-display tracking-wider group-hover:text-primary transition-colors truncate">
             {project.title}
           </CardTitle>
-          <CardDescription className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
-            <Building2 className="w-3 h-3" />
-            {project.company}
-            <span className="text-muted-foreground/50">•</span>
-            <MapPin className="w-3 h-3" />
-            {project.location}
+          <CardDescription className="text-muted-foreground text-xs md:text-sm mt-1 flex flex-wrap items-center gap-1.5 md:gap-2">
+            <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{project.company}</span>
+            <span className="text-muted-foreground/50 hidden sm:inline">•</span>
+            <span className="hidden sm:flex items-center gap-1"><MapPin className="w-3 h-3" />{project.location}</span>
           </CardDescription>
         </div>
-        <div className="text-right">
-          <p className="text-lg font-display font-bold text-secondary">{project.budget}</p>
-          <p className="text-xs text-muted-foreground font-mono">{project.type}</p>
+        <div className="text-left sm:text-right flex-shrink-0">
+          <p className="text-base md:text-lg font-display font-bold text-secondary">{project.budget}</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground font-mono">{project.type}</p>
         </div>
       </div>
     </CardHeader>
     <CardContent>
-      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
-      
-      <div className="flex flex-wrap gap-2 mb-4">
-        {project.skills.map((skill, i) => (
-          <span key={i} className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-mono">
+      <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4 line-clamp-2">{project.description}</p>
+
+      <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
+        {project.skills.slice(0, 4).map((skill, i) => (
+          <span key={i} className="px-2 py-0.5 md:py-1 rounded-lg bg-muted text-muted-foreground text-[10px] md:text-xs font-mono">
             {skill}
           </span>
         ))}
+        {project.skills.length > 4 && (
+          <span className="px-2 py-0.5 md:py-1 text-muted-foreground text-[10px] md:text-xs">+{project.skills.length - 4}</span>
+        )}
       </div>
-      
-      <div className="flex items-center justify-between pt-4 border-t border-border/50">
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 pt-3 md:pt-4 border-t border-border/50">
+        <div className="flex items-center gap-3 md:gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {project.duration}
@@ -67,8 +68,8 @@ const ProjectCard = memo(({ project }) => (
             {project.proposals} proposals
           </span>
         </div>
-        <Link to={`/projects/${project.id}`}>
-          <Button variant="outline" size="sm" className="font-mono text-xs tracking-wider group-hover:border-primary group-hover:text-primary">
+        <Link to={`/projects/${project.id}`} className="w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="font-mono text-xs tracking-wider group-hover:border-primary group-hover:text-primary min-h-[36px] w-full sm:w-auto">
             VIEW DETAILS
             <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
@@ -84,37 +85,36 @@ ProjectCard.displayName = 'ProjectCard';
 // ============================================================================
 const ActiveProjectCard = memo(({ project }) => (
   <Card className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300">
-    <CardContent className="p-4">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h4 className="font-display font-bold text-foreground tracking-wider mb-1">{project.title}</h4>
-          <p className="text-xs text-muted-foreground font-mono flex items-center gap-2">
-            <Building2 className="w-3 h-3" />
-            {project.client}
+    <CardContent className="p-3 md:p-4">
+      <div className="flex items-start justify-between gap-3 md:gap-4 mb-3 md:mb-4">
+        <div className="min-w-0">
+          <h4 className="font-display font-bold text-foreground tracking-wider mb-1 text-sm md:text-base truncate">{project.title}</h4>
+          <p className="text-xs text-muted-foreground font-mono flex items-center gap-1.5 md:gap-2">
+            <Building2 className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{project.client}</span>
           </p>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-mono ${
-          project.status === 'IN_PROGRESS' ? 'bg-secondary/20 text-secondary' :
-          project.status === 'REVIEW' ? 'bg-accent/20 text-accent' :
-          'bg-green-500/20 text-green-500'
-        }`}>
+        <span className={`px-2 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-mono flex-shrink-0 ${project.status === 'IN_PROGRESS' ? 'bg-secondary/20 text-secondary' :
+            project.status === 'REVIEW' ? 'bg-accent/20 text-accent' :
+              'bg-green-500/20 text-green-500'
+          }`}>
           {project.status.replace('_', ' ')}
         </span>
       </div>
-      
+
       <div className="mb-4">
         <div className="flex items-center justify-between text-xs mb-1">
           <span className="text-muted-foreground">Progress</span>
           <span className="text-primary font-mono">{project.progress}%</span>
         </div>
         <div className="h-2 rounded-full bg-muted overflow-hidden">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500"
             style={{ width: `${project.progress}%` }}
           />
         </div>
       </div>
-      
+
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground flex items-center gap-1">
           <Calendar className="w-3 h-3" />
@@ -137,15 +137,15 @@ const SkillBadge = memo(({ skill }) => (
       </span>
       <div className="flex items-center gap-1">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Star 
-            key={i} 
-            className={`w-3 h-3 ${i < skill.level ? 'text-nasa-gold fill-nasa-gold' : 'text-muted-foreground/30'}`} 
+          <Star
+            key={i}
+            className={`w-3 h-3 ${i < skill.level ? 'text-nasa-gold fill-nasa-gold' : 'text-muted-foreground/30'}`}
           />
         ))}
       </div>
     </div>
     <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-      <div 
+      <div
         className="h-full bg-gradient-to-r from-nasa-gold to-accent rounded-full"
         style={{ width: `${skill.proficiency}%` }}
       />
@@ -170,7 +170,7 @@ export const FreelancerDashboard = memo(() => {
     // Prevent duplicate calls
     if (fetchingRef.current) return;
     fetchingRef.current = true;
-    
+
     const fetchData = async () => {
       let cancelled = false;
       try {
@@ -183,7 +183,7 @@ export const FreelancerDashboard = memo(() => {
               title: p.title,
               company: p.client?.full_name || 'Company',
               location: p.is_remote ? 'Remote' : p.location || 'Location TBD',
-              budget: p.budget_min && p.budget_max 
+              budget: p.budget_min && p.budget_max
                 ? `₹${p.budget_min.toLocaleString()} - ₹${p.budget_max.toLocaleString()}`
                 : 'Budget TBD',
               type: p.budget_type === 'fixed' ? 'Fixed Price' : 'Hourly',
@@ -265,7 +265,7 @@ export const FreelancerDashboard = memo(() => {
               </Button>
             </Link>
           </div>
-          
+
           <div className="grid md:grid-cols-4 gap-4">
             {skills.map((skill) => (
               <SkillBadge key={skill.name} skill={skill} />
@@ -287,7 +287,7 @@ export const FreelancerDashboard = memo(() => {
             </Button>
           </Link>
         </div>
-        
+
         {recommendedProjects.length > 0 ? (
           <div className="grid lg:grid-cols-3 gap-4">
             {recommendedProjects.map((project) => (
@@ -324,7 +324,7 @@ export const FreelancerDashboard = memo(() => {
               <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </CardContent>
           </Card>
-          
+
           <Card className="tech-panel border-border bg-card/50 hover-lift cursor-pointer group">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-secondary/10 border border-secondary/30 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
@@ -339,7 +339,7 @@ export const FreelancerDashboard = memo(() => {
               <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-secondary transition-colors" />
             </CardContent>
           </Card>
-          
+
           <Card className="tech-panel border-border bg-card/50 hover-lift cursor-pointer group">
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center group-hover:bg-accent/20 transition-colors">

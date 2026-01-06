@@ -772,5 +772,531 @@ router.delete('/skills/:id', idValidation, asyncHandler(async (req, res) => {
   res.json({ message: 'Skill deleted successfully' });
 }));
 
+// ============================================================================
+// TRAINING PROGRAMS MANAGEMENT
+// ============================================================================
+
+// Get all training programs
+router.get('/training', paginationValidation, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 20, status, search } = req.query;
+  const offset = (page - 1) * limit;
+
+  let query = supabaseAdmin
+    .from('training_programs')
+    .select(`
+      *,
+      trainer:profiles(id, full_name, avatar_url)
+    `, { count: 'exact' });
+
+  if (status) {
+    query = query.eq('status', status);
+  }
+  if (search) {
+    query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+  }
+
+  query = query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  const { data: programs, error, count } = await query;
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to fetch training programs' });
+  }
+
+  res.json({
+    programs: programs || [],
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / limit)
+    }
+  });
+}));
+
+// Update training program
+router.put('/training/:id', idValidation, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  const { data: program, error } = await supabaseAdmin
+    .from('training_programs')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !program) {
+    return res.status(404).json({ error: 'Training program not found' });
+  }
+
+  res.json({ message: 'Training program updated successfully', program });
+}));
+
+// Delete training program
+router.delete('/training/:id', idValidation, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabaseAdmin
+    .from('training_programs')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to delete training program' });
+  }
+
+  res.json({ message: 'Training program deleted successfully' });
+}));
+
+// ============================================================================
+// JOB APPLICATIONS MANAGEMENT
+// ============================================================================
+
+// Get all job applications
+router.get('/applications', paginationValidation, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 20, status, search } = req.query;
+  const offset = (page - 1) * limit;
+
+  let query = supabaseAdmin
+    .from('job_applications')
+    .select(`
+      *,
+      job:jobs(id, title, status),
+      applicant:profiles(id, full_name, avatar_url, headline)
+    `, { count: 'exact' });
+
+  if (status) {
+    query = query.eq('status', status);
+  }
+
+  query = query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  const { data: applications, error, count } = await query;
+
+  if (error) {
+    console.error('Error fetching applications:', error);
+    return res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+
+  res.json({
+    applications: applications || [],
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / limit)
+    }
+  });
+}));
+
+// Update job application status
+router.put('/applications/:id', idValidation, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status, review_notes } = req.body;
+
+  const { data: application, error } = await supabaseAdmin
+    .from('job_applications')
+    .update({
+      status,
+      review_notes,
+      reviewed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !application) {
+    return res.status(404).json({ error: 'Application not found' });
+  }
+
+  res.json({ message: 'Application updated successfully', application });
+}));
+
+// Delete job application
+router.delete('/applications/:id', idValidation, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabaseAdmin
+    .from('job_applications')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to delete application' });
+  }
+
+  res.json({ message: 'Application deleted successfully' });
+}));
+
+// ============================================================================
+// MESSAGES MODERATION
+// ============================================================================
+
+// Get all messages (for moderation)
+router.get('/messages', paginationValidation, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 50, search, flagged } = req.query;
+  const offset = (page - 1) * limit;
+
+  let query = supabaseAdmin
+    .from('messages')
+    .select(`
+      *,
+      sender:profiles(id, full_name, avatar_url),
+      conversation:conversations(id, type)
+    `, { count: 'exact' });
+
+  if (search) {
+    query = query.ilike('content', `%${search}%`);
+  }
+  if (flagged === 'true') {
+    query = query.eq('is_flagged', true);
+  }
+
+  query = query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  const { data: messages, error, count } = await query;
+
+  if (error) {
+    console.error('Error fetching messages:', error);
+    return res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+
+  res.json({
+    messages: messages || [],
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / limit)
+    }
+  });
+}));
+
+// Flag/unflag message
+router.put('/messages/:id/flag', idValidation, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { is_flagged, flag_reason } = req.body;
+
+  const { data: message, error } = await supabaseAdmin
+    .from('messages')
+    .update({
+      is_flagged,
+      flag_reason,
+      flagged_by: req.user.user_id,
+      flagged_at: is_flagged ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !message) {
+    return res.status(404).json({ error: 'Message not found' });
+  }
+
+  res.json({ message: 'Message flag updated', data: message });
+}));
+
+// Delete message
+router.delete('/messages/:id', idValidation, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabaseAdmin
+    .from('messages')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to delete message' });
+  }
+
+  res.json({ message: 'Message deleted successfully' });
+}));
+
+// ============================================================================
+// CERTIFICATIONS MANAGEMENT
+// ============================================================================
+
+// Get all certifications
+router.get('/certifications', asyncHandler(async (req, res) => {
+  const { data: certifications, error } = await supabaseAdmin
+    .from('certifications')
+    .select(`
+      *,
+      platform:rpa_platforms!certifications_platform_id_fkey(id, name)
+    `)
+    .order('name');
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to fetch certifications' });
+  }
+
+  res.json({ certifications: certifications || [] });
+}));
+
+// Create certification
+router.post('/certifications', asyncHandler(async (req, res) => {
+  const { name, slug, level, platform_id, description, verification_url, is_active } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: 'Certification name is required' });
+  }
+
+  const { data: certification, error } = await supabaseAdmin
+    .from('certifications')
+    .insert({
+      name,
+      slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
+      level,
+      platform_id,
+      description,
+      verification_url,
+      is_active: is_active !== undefined ? is_active : true
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to create certification', details: error });
+  }
+
+  res.json({ message: 'Certification created successfully', certification });
+}));
+
+// Update certification
+router.put('/certifications/:id', idValidation, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  const { data: certification, error } = await supabaseAdmin
+    .from('certifications')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !certification) {
+    return res.status(404).json({ error: 'Certification not found' });
+  }
+
+  res.json({ message: 'Certification updated successfully', certification });
+}));
+
+// Delete certification
+router.delete('/certifications/:id', idValidation, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabaseAdmin
+    .from('certifications')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to delete certification' });
+  }
+
+  res.json({ message: 'Certification deleted successfully' });
+}));
+
+// ============================================================================
+// SYSTEM NOTIFICATIONS / ANNOUNCEMENTS
+// ============================================================================
+
+// Send broadcast notification to all users or specific types
+router.post('/notifications/broadcast', asyncHandler(async (req, res) => {
+  const { title, message, type = 'announcement', user_types, priority = 'normal' } = req.body;
+
+  if (!title || !message) {
+    return res.status(400).json({ error: 'Title and message are required' });
+  }
+
+  // Get target users
+  let usersQuery = supabaseAdmin.from('profiles').select('user_id');
+
+  if (user_types && user_types.length > 0) {
+    usersQuery = usersQuery.in('user_type', user_types);
+  }
+
+  const { data: users, error: usersError } = await usersQuery;
+
+  if (usersError) {
+    return res.status(500).json({ error: 'Failed to get users' });
+  }
+
+  // Create notification for each user
+  const notifications = (users || []).map(u => ({
+    user_id: u.user_id,
+    type,
+    title,
+    message,
+    priority,
+    is_read: false,
+    created_at: new Date().toISOString()
+  }));
+
+  if (notifications.length > 0) {
+    const { error: insertError } = await supabaseAdmin
+      .from('notifications')
+      .insert(notifications);
+
+    if (insertError) {
+      console.error('Error sending notifications:', insertError);
+      return res.status(500).json({ error: 'Failed to send notifications' });
+    }
+  }
+
+  res.json({
+    message: 'Broadcast sent successfully',
+    recipients: notifications.length
+  });
+}));
+
+// Get all notifications (admin view)
+router.get('/notifications', paginationValidation, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 50, type } = req.query;
+  const offset = (page - 1) * limit;
+
+  let query = supabaseAdmin
+    .from('notifications')
+    .select(`
+      *,
+      user:profiles!notifications_user_id_fkey(id, full_name, avatar_url)
+    `, { count: 'exact' });
+
+  if (type) {
+    query = query.eq('type', type);
+  }
+
+  query = query
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  const { data: notifications, error, count } = await query;
+
+  if (error) {
+    return res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+
+  res.json({
+    notifications: notifications || [],
+    pagination: {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / limit)
+    }
+  });
+}));
+
+// ============================================================================
+// ENHANCED ANALYTICS
+// ============================================================================
+
+router.get('/analytics', asyncHandler(async (req, res) => {
+  const { period = '30' } = req.query;
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - parseInt(period));
+
+  // User registrations over time
+  const { data: usersByDate } = await supabaseAdmin
+    .from('profiles')
+    .select('created_at')
+    .gte('created_at', daysAgo.toISOString());
+
+  // Jobs posted over time
+  const { data: jobsByDate } = await supabaseAdmin
+    .from('jobs')
+    .select('created_at, status')
+    .gte('created_at', daysAgo.toISOString());
+
+  // Projects posted over time
+  const { data: projectsByDate } = await supabaseAdmin
+    .from('projects')
+    .select('created_at, status, budget_min, budget_max')
+    .gte('created_at', daysAgo.toISOString());
+
+  // Applications submitted
+  const { data: applications } = await supabaseAdmin
+    .from('job_applications')
+    .select('created_at, status')
+    .gte('created_at', daysAgo.toISOString());
+
+  // Messages sent
+  const { count: messagesCount } = await supabaseAdmin
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', daysAgo.toISOString());
+
+  // Training enrollments
+  const { count: enrollmentsCount } = await supabaseAdmin
+    .from('training_enrollments')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', daysAgo.toISOString());
+
+  // Top platforms by user count
+  const { data: topPlatforms } = await supabaseAdmin
+    .from('profile_platforms')
+    .select('platform_id, rpa_platforms!profile_platforms_platform_id_fkey(name)')
+    .limit(100);
+
+  const platformCounts = {};
+  (topPlatforms || []).forEach(p => {
+    const name = p.rpa_platforms?.name || 'Unknown';
+    platformCounts[name] = (platformCounts[name] || 0) + 1;
+  });
+
+  res.json({
+    analytics: {
+      period: parseInt(period),
+      users: {
+        total: usersByDate?.length || 0,
+        byDate: usersByDate || []
+      },
+      jobs: {
+        total: jobsByDate?.length || 0,
+        byStatus: (jobsByDate || []).reduce((acc, j) => {
+          acc[j.status] = (acc[j.status] || 0) + 1;
+          return acc;
+        }, {}),
+        byDate: jobsByDate || []
+      },
+      projects: {
+        total: projectsByDate?.length || 0,
+        byStatus: (projectsByDate || []).reduce((acc, p) => {
+          acc[p.status] = (acc[p.status] || 0) + 1;
+          return acc;
+        }, {}),
+        avgBudget: projectsByDate?.length > 0
+          ? Math.round(projectsByDate.reduce((sum, p) => sum + ((p.budget_min || 0) + (p.budget_max || 0)) / 2, 0) / projectsByDate.length)
+          : 0
+      },
+      applications: {
+        total: applications?.length || 0,
+        byStatus: (applications || []).reduce((acc, a) => {
+          acc[a.status] = (acc[a.status] || 0) + 1;
+          return acc;
+        }, {})
+      },
+      messages: messagesCount || 0,
+      enrollments: enrollmentsCount || 0,
+      topPlatforms: Object.entries(platformCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name, count]) => ({ name, count }))
+    }
+  });
+}));
+
 export default router;
 

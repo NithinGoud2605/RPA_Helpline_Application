@@ -9,8 +9,8 @@ const router = express.Router();
 
 // Get all training programs
 router.get('/', optionalAuth, paginationValidation, asyncHandler(async (req, res) => {
-  const { 
-    page = PAGINATION.DEFAULT_PAGE, 
+  const {
+    page = PAGINATION.DEFAULT_PAGE,
     limit = PAGINATION.DEFAULT_LIMIT,
     technology,
     level,
@@ -102,7 +102,7 @@ router.get('/:id', idValidation, asyncHandler(async (req, res) => {
 
   // Get enrollment count
   const { count: enrollmentCount } = await supabaseAdmin
-    .from('enrollments')
+    .from('training_enrollments')
     .select('*', { count: 'exact', head: true })
     .eq('program_id', id);
 
@@ -269,7 +269,7 @@ router.post('/:id/enroll', authenticateToken, idValidation, asyncHandler(async (
 
   // Check for existing enrollment
   const { data: existingEnrollment } = await supabaseAdmin
-    .from('enrollments')
+    .from('training_enrollments')
     .select('id')
     .eq('program_id', id)
     .eq('student_id', req.userId)
@@ -282,7 +282,7 @@ router.post('/:id/enroll', authenticateToken, idValidation, asyncHandler(async (
   // Check max students
   if (program.max_students) {
     const { count } = await supabaseAdmin
-      .from('enrollments')
+      .from('training_enrollments')
       .select('*', { count: 'exact', head: true })
       .eq('program_id', id);
 
@@ -292,7 +292,7 @@ router.post('/:id/enroll', authenticateToken, idValidation, asyncHandler(async (
   }
 
   const { data: enrollment, error } = await supabaseAdmin
-    .from('enrollments')
+    .from('training_enrollments')
     .insert({
       program_id: id,
       student_id: req.userId,
@@ -312,8 +312,8 @@ router.post('/:id/enroll', authenticateToken, idValidation, asyncHandler(async (
 
 // Get my enrollments
 router.get('/me/enrollments', authenticateToken, paginationValidation, asyncHandler(async (req, res) => {
-  const { 
-    page = PAGINATION.DEFAULT_PAGE, 
+  const {
+    page = PAGINATION.DEFAULT_PAGE,
     limit = PAGINATION.DEFAULT_LIMIT,
     status
   } = req.query;
@@ -321,7 +321,7 @@ router.get('/me/enrollments', authenticateToken, paginationValidation, asyncHand
   const offset = (page - 1) * limit;
 
   let query = supabaseAdmin
-    .from('enrollments')
+    .from('training_enrollments')
     .select(`
       *,
       program:training_programs(id, title, technologies, level, format, price)
@@ -356,8 +356,8 @@ router.get('/me/enrollments', authenticateToken, paginationValidation, asyncHand
 
 // Get my training programs (as trainer)
 router.get('/me/programs', authenticateToken, requireRole('trainer'), paginationValidation, asyncHandler(async (req, res) => {
-  const { 
-    page = PAGINATION.DEFAULT_PAGE, 
+  const {
+    page = PAGINATION.DEFAULT_PAGE,
     limit = PAGINATION.DEFAULT_LIMIT,
     status
   } = req.query;

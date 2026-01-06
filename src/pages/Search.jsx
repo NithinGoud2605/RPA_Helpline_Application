@@ -15,10 +15,10 @@ export const SearchPage = memo(() => {
   const toast = useToast();
   const { role } = useAuthStore();
   const toastRef = useRef(toast);
-  
+
   const initialQuery = searchParams.get('q') || '';
   const [searchQuery, setSearchQuery] = useState(initialQuery);
-  
+
   // Set default tab based on role
   const getDefaultTab = () => {
     if (role === 'job_seeker') return 'jobs';
@@ -27,14 +27,14 @@ export const SearchPage = memo(() => {
     if (role === 'ba_pm' || role === 'developer') return 'projects';
     return 'all';
   };
-  
+
   const [activeTab, setActiveTab] = useState(() => {
     const tabParam = searchParams.get('tab');
     return tabParam || getDefaultTab();
   });
-  
+
   const debouncedQuery = useDebounce(searchQuery, 500);
-  
+
   const [results, setResults] = useState({
     jobs: [],
     projects: [],
@@ -59,11 +59,11 @@ export const SearchPage = memo(() => {
   useEffect(() => {
     const newQuery = debouncedQuery.trim();
     const previousQuery = previousQueryRef.current.trim();
-    
+
     // Only update URL if query actually changed
     if (newQuery !== previousQuery) {
       previousQueryRef.current = debouncedQuery;
-      
+
       if (newQuery) {
         setSearchParams({ q: newQuery }, { replace: true });
       } else {
@@ -164,7 +164,7 @@ export const SearchPage = memo(() => {
         allTabs.find(t => t.id === 'projects')
       ].filter(Boolean);
     }
-    
+
     // Default order
     return allTabs;
   };
@@ -172,24 +172,24 @@ export const SearchPage = memo(() => {
   const tabs = getTabs();
 
   return (
-    <div className="min-h-screen pt-16 pb-8 relative">
+    <div className="min-h-screen pt-16 md:pt-16 pb-6 md:pb-8 relative">
       {/* Background */}
       <div className="fixed inset-0 star-field opacity-40 pointer-events-none" />
       <div className="fixed inset-0 grid-overlay opacity-20 pointer-events-none" />
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground tracking-wider mb-2">
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-foreground tracking-wider mb-1 md:mb-2">
             SEARCH <span className="text-primary">RESULTS</span>
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Search across jobs, projects, and profiles
           </p>
         </div>
 
         {/* Search Bar */}
-        <div className="tech-panel-strong rounded-xl p-4 mb-6">
+        <div className="tech-panel-strong rounded-xl p-3 md:p-4 mb-4 md:mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
@@ -197,12 +197,12 @@ export const SearchPage = memo(() => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search jobs, profiles, projects..."
-              className="w-full pl-10 pr-10 py-2.5 bg-background border-2 border-border rounded-lg text-foreground placeholder-muted-foreground font-mono text-sm focus:outline-none focus:border-primary transition-colors"
+              className="w-full pl-10 pr-10 py-2.5 md:py-2.5 bg-background border-2 border-border rounded-lg text-foreground placeholder-muted-foreground font-mono text-sm focus:outline-none focus:border-primary transition-colors min-h-[44px]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -210,22 +210,21 @@ export const SearchPage = memo(() => {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto">
+        {/* Tabs - Scrollable on mobile */}
+        <div className="flex items-center gap-1.5 md:gap-2 mb-4 md:mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-mono transition-colors flex items-center gap-2 whitespace-nowrap ${
-                  activeTab === tab.id
+                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-mono transition-colors flex items-center gap-1.5 md:gap-2 whitespace-nowrap min-h-[40px] ${activeTab === tab.id
                     ? 'bg-primary text-white'
                     : 'tech-panel text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
-                <Icon className="w-4 h-4" />
-                {tab.label} ({tab.count})
+                <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">{tab.label}</span> ({tab.count})
               </button>
             );
           })}
@@ -233,56 +232,56 @@ export const SearchPage = memo(() => {
 
         {/* Results */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-8 md:py-12">
             <LoadingSpinner />
           </div>
         ) : !debouncedQuery.trim() ? (
           <Card className="tech-panel-strong border-border">
-            <CardContent className="p-12 text-center">
-              <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-display font-bold text-foreground mb-2">Start Searching</h3>
-              <p className="text-muted-foreground">Enter a search query to find jobs, projects, and profiles</p>
+            <CardContent className="p-6 md:p-12 text-center">
+              <Search className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground mx-auto mb-3 md:mb-4" />
+              <h3 className="text-lg md:text-xl font-display font-bold text-foreground mb-2">Start Searching</h3>
+              <p className="text-sm text-muted-foreground">Enter a search query to find jobs, projects, and profiles</p>
             </CardContent>
           </Card>
         ) : totalResults === 0 ? (
           <Card className="tech-panel-strong border-border">
-            <CardContent className="p-12 text-center">
-              <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-display font-bold text-foreground mb-2">No Results Found</h3>
-              <p className="text-muted-foreground mb-6">No results found for "{debouncedQuery}"</p>
-              <Button onClick={() => setSearchQuery('')} variant="outline" className="font-mono text-xs tracking-wider">
+            <CardContent className="p-6 md:p-12 text-center">
+              <Search className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground mx-auto mb-3 md:mb-4" />
+              <h3 className="text-lg md:text-xl font-display font-bold text-foreground mb-2">No Results Found</h3>
+              <p className="text-sm text-muted-foreground mb-4 md:mb-6">No results found for "{debouncedQuery}"</p>
+              <Button onClick={() => setSearchQuery('')} variant="outline" className="font-mono text-xs tracking-wider min-h-[44px]">
                 CLEAR SEARCH
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Jobs */}
             {(activeTab === 'all' || activeTab === 'jobs') && results.jobs.length > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-display font-bold text-foreground flex items-center gap-2">
-                    <Briefcase className="w-5 h-5" />
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <h2 className="text-lg md:text-xl font-display font-bold text-foreground flex items-center gap-1.5 md:gap-2">
+                    <Briefcase className="w-4 h-4 md:w-5 md:h-5" />
                     Jobs ({pagination.jobs.total})
                   </h2>
                   <Link to={`/jobs?search=${encodeURIComponent(debouncedQuery)}`}>
-                    <Button variant="outline" size="sm" className="font-mono text-xs">
+                    <Button variant="outline" size="sm" className="font-mono text-xs min-h-[36px]">
                       View All <ArrowRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-3 md:gap-4 md:grid-cols-2">
                   {results.jobs.map((job) => (
                     <Card
                       key={job.id}
                       className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group"
                       onClick={() => navigate(`/jobs/${job.id}`)}
                     >
-                      <CardContent className="p-4">
-                        <h3 className="text-base font-display font-bold text-foreground group-hover:text-primary transition-colors mb-2">
+                      <CardContent className="p-3 md:p-4">
+                        <h3 className="text-sm md:text-base font-display font-bold text-foreground group-hover:text-primary transition-colors mb-1.5 md:mb-2">
                           {job.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <p className="text-xs md:text-sm text-muted-foreground mb-1.5 md:mb-2">
                           {job.employer?.company_name || job.location || 'Company'}
                         </p>
                         <p className="text-xs text-muted-foreground line-clamp-2">{job.description}</p>
@@ -296,29 +295,29 @@ export const SearchPage = memo(() => {
             {/* Projects */}
             {(activeTab === 'all' || activeTab === 'projects') && results.projects.length > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-display font-bold text-foreground flex items-center gap-2">
-                    <FolderKanban className="w-5 h-5" />
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <h2 className="text-lg md:text-xl font-display font-bold text-foreground flex items-center gap-1.5 md:gap-2">
+                    <FolderKanban className="w-4 h-4 md:w-5 md:h-5" />
                     Projects ({pagination.projects.total})
                   </h2>
                   <Link to={`/projects?search=${encodeURIComponent(debouncedQuery)}`}>
-                    <Button variant="outline" size="sm" className="font-mono text-xs">
+                    <Button variant="outline" size="sm" className="font-mono text-xs min-h-[36px]">
                       View All <ArrowRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-3 md:gap-4 md:grid-cols-2">
                   {results.projects.map((project) => (
                     <Card
                       key={project.id}
                       className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group"
                       onClick={() => navigate(`/projects/${project.id}`)}
                     >
-                      <CardContent className="p-4">
-                        <h3 className="text-base font-display font-bold text-foreground group-hover:text-primary transition-colors mb-2">
+                      <CardContent className="p-3 md:p-4">
+                        <h3 className="text-sm md:text-base font-display font-bold text-foreground group-hover:text-primary transition-colors mb-1.5 md:mb-2">
                           {project.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <p className="text-xs md:text-sm text-muted-foreground mb-1.5 md:mb-2">
                           {project.client?.full_name || 'Client'}
                         </p>
                         <p className="text-xs text-muted-foreground line-clamp-2">{project.description}</p>
@@ -332,39 +331,39 @@ export const SearchPage = memo(() => {
             {/* Profiles */}
             {(activeTab === 'all' || activeTab === 'profiles') && results.profiles.length > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-display font-bold text-foreground flex items-center gap-2">
-                    <Users className="w-5 h-5" />
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <h2 className="text-lg md:text-xl font-display font-bold text-foreground flex items-center gap-1.5 md:gap-2">
+                    <Users className="w-4 h-4 md:w-5 md:h-5" />
                     Profiles ({pagination.profiles.total})
                   </h2>
                   <Link to={`/talent?search=${encodeURIComponent(debouncedQuery)}`}>
-                    <Button variant="outline" size="sm" className="font-mono text-xs">
+                    <Button variant="outline" size="sm" className="font-mono text-xs min-h-[36px]">
                       View All <ArrowRight className="w-3 h-3 ml-1" />
                     </Button>
                   </Link>
                 </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid gap-3 md:gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {results.profiles.map((profile) => (
                     <Card
                       key={profile.id}
                       className="tech-panel border-border bg-card/50 hover-lift transition-all duration-300 cursor-pointer group"
                       onClick={() => navigate(`/profile/${profile.id}`)}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-display font-bold">
+                      <CardContent className="p-3 md:p-4">
+                        <div className="flex items-center gap-2.5 md:gap-3 mb-2">
+                          <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs md:text-sm font-display font-bold flex-shrink-0">
                             {profile.avatar_url ? (
                               <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full rounded-full object-cover" />
                             ) : (
                               profile.full_name?.charAt(0)?.toUpperCase() || 'U'
                             )}
                           </div>
-                          <div>
-                            <h3 className="text-base font-display font-bold text-foreground group-hover:text-primary transition-colors">
+                          <div className="min-w-0">
+                            <h3 className="text-sm md:text-base font-display font-bold text-foreground group-hover:text-primary transition-colors truncate">
                               {profile.full_name}
                             </h3>
                             {profile.headline && (
-                              <p className="text-xs text-muted-foreground">{profile.headline}</p>
+                              <p className="text-[10px] md:text-xs text-muted-foreground truncate">{profile.headline}</p>
                             )}
                           </div>
                         </div>

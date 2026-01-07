@@ -237,9 +237,15 @@ if (process.env.NODE_ENV === 'production') {
   
   // Handle ALL non-API routes with index.html for SPA routing
   // This must be the last route handler
-  app.get('*', (req, res) => {
+  // Handle all HTTP methods for SPA routing (GET, POST for form submissions, etc.)
+  app.all('*', (req, res, next) => {
     // Double-check: skip API routes (should already be handled, but just in case)
     if (req.path.startsWith('/api')) {
+      return res.status(404).json({ error: 'Not Found', message: `Cannot ${req.method} ${req.originalUrl}` });
+    }
+    
+    // Only handle GET requests for SPA routing (POST/PUT/DELETE should go to API)
+    if (req.method !== 'GET') {
       return res.status(404).json({ error: 'Not Found', message: `Cannot ${req.method} ${req.originalUrl}` });
     }
     
@@ -264,7 +270,13 @@ if (process.env.NODE_ENV === 'production') {
     
     console.log(`[Frontend] Serving index.html for route: ${req.path}`);
     
-    // Send index.html for all other GET requests (SPA routing)
+    // Set proper headers for HTML content
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    
+    // Send index.html for all GET requests (SPA routing)
     res.sendFile(indexPath, (err) => {
       if (err) {
         console.error(`[Frontend] Error serving index.html for ${req.path}:`, err.message);

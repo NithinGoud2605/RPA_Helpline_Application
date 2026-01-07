@@ -65,6 +65,8 @@ const Courses = lazyLoad(() => import('../pages/Training/Courses'), 'Courses');
 const CourseDetail = lazyLoad(() => import('../pages/Training/CourseDetail'), 'CourseDetail');
 const CreateCourse = lazyLoad(() => import('../pages/Training/CreateCourse'), 'CreateCourse');
 const EditCourse = lazyLoad(() => import('../pages/Training/EditCourse'), 'EditCourse');
+const ProfileSetup = lazyLoad(() => import('../pages/ProfileSetup'), 'ProfileSetup');
+const ProfileSetupEnhanced = lazyLoad(() => import('../pages/ProfileSetupEnhanced'), 'ProfileSetupEnhanced');
 
 // Smooth loading fallback
 const SmoothLoader = memo(() => (
@@ -172,7 +174,7 @@ export const AppRoutes = () => {
           <Route path="/register/freelancer" element={<RouteWrapper><RegisterFreelancer /></RouteWrapper>} />
           <Route path="/register/developer" element={<RouteWrapper><RegisterDeveloper /></RouteWrapper>} />
           <Route path="/register/trainer" element={<RouteWrapper><RegisterTrainer /></RouteWrapper>} />
-          <Route path="/register/jobseeker" element={<RouteWrapper><RegisterJobSeeker /></RouteWrapper>} />
+          <Route path="/register/job-seeker" element={<RouteWrapper><RegisterJobSeeker /></RouteWrapper>} />
 
           {/* OAuth Callbacks */}
           <Route path="/auth/github/callback" element={<RouteWrapper withLayout={false}><GitHubCallback /></RouteWrapper>} />
@@ -184,6 +186,16 @@ export const AppRoutes = () => {
               <ProtectedRoute>
                 <RouteWrapper withLayout={false}>
                   <Dashboard />
+                </RouteWrapper>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile-setup"
+            element={
+              <ProtectedRoute>
+                <RouteWrapper>
+                  <ProfileSetupEnhanced />
                 </RouteWrapper>
               </ProtectedRoute>
             }

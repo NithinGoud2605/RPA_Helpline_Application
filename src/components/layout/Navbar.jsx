@@ -76,11 +76,11 @@ export const Navbar = memo(() => {
       }}
     >
       <Container>
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center gap-3 group -ml-2 md:-ml-4"
+            className="flex items-center gap-3 group flex-shrink-0"
           >
             <img
               src="/logo.png"
@@ -93,7 +93,7 @@ export const Navbar = memo(() => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1 flex-1">
+          <div className="hidden md:flex items-center gap-3 flex-1 justify-center">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.to;
               return (
@@ -103,7 +103,7 @@ export const Navbar = memo(() => {
                   onMouseEnter={() => preloadRoute(link.to)}
                   className={`
                     px-4 py-2 rounded-lg
-                    text-xs font-display tracking-widest
+                    text-xs font-display tracking-widest whitespace-nowrap
                     transition-all duration-200 ease-out
                     ${isActive
                       ? 'text-primary bg-primary/10'
@@ -117,13 +117,13 @@ export const Navbar = memo(() => {
             })}
 
             {/* Search Bar - Wide and in one line */}
-            <div className="flex-1 max-w-xl mx-4">
+            <div className="flex-1 max-w-xl mx-6">
               <GlobalSearch />
             </div>
           </div>
 
           {/* Right Side */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4 flex-shrink-0">
             <ThemeSwitcher />
             {isAuthenticated ? (
               <>

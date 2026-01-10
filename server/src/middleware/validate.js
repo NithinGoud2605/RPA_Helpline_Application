@@ -33,6 +33,13 @@ export const registerValidation = [
   body('user_type')
     .isIn(['client', 'freelancer', 'job_seeker', 'trainer', 'ba_pm', 'employer'])
     .withMessage('Invalid user type. Must be one of: client, freelancer, job_seeker, trainer, ba_pm, employer'),
+  body('phone')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ min: 10, max: 20 })
+    .withMessage('Phone number must be between 10 and 20 characters')
+    .matches(/^[\d\s\+\-\(\)]+$/)
+    .withMessage('Phone number can only contain digits, spaces, +, -, and parentheses'),
   validate
 ];
 

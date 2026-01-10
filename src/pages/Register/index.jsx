@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Users, Briefcase, GraduationCap, Building2, ArrowLeft, User, Lock, Mail,
   ArrowRight, Shield, CheckCircle, Code, Target, Eye, EyeOff,
-  AlertCircle, Sparkles, Award, Globe
+  AlertCircle, Sparkles, Award, Globe, Phone
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -149,6 +149,7 @@ export const Register = memo(() => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   });
@@ -335,12 +336,20 @@ export const Register = memo(() => {
       // Register with backend via store
       const userRole = selectedType.id.startsWith('client') ? 'client' : selectedType.id;
 
-      const result = await register({
+      // Build registration data - only include phone if it has a value
+      const registrationData = {
         full_name: formData.name,
         email: formData.email,
         password: formData.password,
         user_type: userRole,
-      });
+      };
+
+      // Add phone only if provided
+      if (formData.phone && formData.phone.trim()) {
+        registrationData.phone = formData.phone.trim();
+      }
+
+      const result = await register(registrationData);
 
       if (result.success) {
         setRole(userRole);
@@ -635,6 +644,25 @@ export const Register = memo(() => {
                     autoComplete="email"
                   />
                 </div>
+
+                {/* Phone - Optional, full width */}
+                <InputField
+                  label="PHONE NUMBER (OPTIONAL)"
+                  icon={Phone}
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => {
+                    // Only allow digits, spaces, +, -, and parentheses
+                    const value = e.target.value.replace(/[^\d\s\+\-\(\)]/g, '');
+                    setFormData(prev => ({ ...prev, phone: value }));
+                    if (errors.phone) {
+                      setErrors(prev => ({ ...prev, phone: '' }));
+                    }
+                  }}
+                  placeholder="+1 234 567 8900 (optional)"
+                  error={errors.phone}
+                  autoComplete="tel"
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <InputField

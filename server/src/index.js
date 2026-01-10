@@ -19,6 +19,7 @@ import taxonomyRoutes from './routes/taxonomy.js';
 import notificationRoutes from './routes/notifications.js';
 import messageRoutes from './routes/messages.js';
 import uploadRoutes from './routes/upload.js';
+import statsRoutes from './routes/stats.js';
 
 // Middleware
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -165,6 +166,9 @@ app.use('/api/messages', messageRoutes);
 
 // File uploads
 app.use('/api/upload', uploadRoutes);
+
+// Stats (dashboard statistics, activity, recommendations)
+app.use('/api/stats', statsRoutes);
 
 // Error handling for API routes (before SPA fallback, only for /api routes)
 app.use('/api', notFoundHandler);

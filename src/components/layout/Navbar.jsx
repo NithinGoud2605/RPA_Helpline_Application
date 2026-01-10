@@ -15,7 +15,7 @@ export const Navbar = memo(() => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user, logout } = useAuthStore();
-  const { toast } = useToast();
+  const { success } = useToast();
 
   const navLinks = useMemo(() => [
     { to: '/', label: 'SERVICES' },
@@ -52,10 +52,10 @@ export const Navbar = memo(() => {
 
   const handleLogout = useCallback(() => {
     logout();
-    toast.success('Logged out successfully');
+    success('Logged out successfully');
     navigate('/');
     setUserMenuOpen(false);
-  }, [logout, toast, navigate]);
+  }, [logout, success, navigate]);
 
   return (
     <nav 

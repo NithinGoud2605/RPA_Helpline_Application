@@ -130,6 +130,66 @@ export const BioEditModal = ({ isOpen, onClose, bio, onSave }) => {
   );
 };
 
+// Edit Phone Number
+export const PhoneEditModal = ({ isOpen, onClose, profile, onSave }) => {
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+  const [phone, setPhone] = useState('');
+
+  useEffect(() => {
+    if (profile) {
+      setPhone(profile.phone || '');
+    }
+  }, [profile, isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await profileApi.updateProfile({ phone: phone.trim() || null });
+      toast.success('Phone number updated successfully');
+      onSave();
+      onClose();
+    } catch (error) {
+      console.error('Failed to update phone number:', error);
+      toast.error(error.error || 'Failed to update phone number');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Phone Number" size="md">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Phone Number (Optional)</label>
+          <Input
+            type="tel"
+            value={phone}
+            onChange={(e) => {
+              // Only allow digits, spaces, +, -, and parentheses
+              const value = e.target.value.replace(/[^\d\s\+\-\(\)]/g, '');
+              setPhone(value);
+            }}
+            placeholder="+91 98765 43210"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Phone number is optional. You can leave it empty to remove it.
+          </p>
+        </div>
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
 // Edit Social Links
 export const SocialLinksEditModal = ({ isOpen, onClose, profile, onSave }) => {
   const toast = useToast();

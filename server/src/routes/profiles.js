@@ -38,6 +38,18 @@ const calculateProfileCompletion = (profile, platforms, skills, experience) => {
 router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
   const profile = req.user;
   
+  // Get email and phone from users table
+  const { data: user, error: userError } = await supabaseAdmin
+    .from('users')
+    .select('email, phone')
+    .eq('id', profile.user_id)
+    .single();
+  
+  // If user not found, continue with null values for email and phone
+  if (userError && userError.code !== 'PGRST116') {
+    console.error('Error fetching user data:', userError);
+  }
+  
   // Get platforms
   const { data: platforms } = await supabaseAdmin
     .from('user_platforms')
@@ -141,6 +153,8 @@ router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
   res.json({
     profile: {
       ...profile,
+      email: user?.email || null,
+      phone: user?.phone || null,
       profile_completion: completion,
       platforms: platforms || [],
       skills: skills || [],
@@ -176,7 +190,9 @@ router.put('/me', authenticateToken, asyncHandler(async (req, res) => {
     rpa_experience_years,
     // Image fields
     avatar_url,
-    cover_image_url
+    cover_image_url,
+    // Phone number (stored in users table)
+    phone
   } = req.body;
 
   const updates = {};
@@ -204,6 +220,7 @@ router.put('/me', authenticateToken, asyncHandler(async (req, res) => {
   if (avatar_url !== undefined) updates.avatar_url = avatar_url;
   if (cover_image_url !== undefined) updates.cover_image_url = cover_image_url;
 
+  // Update profile fields
   const { data: profile, error } = await supabaseAdmin
     .from('profiles')
     .update(updates)
@@ -214,6 +231,19 @@ router.put('/me', authenticateToken, asyncHandler(async (req, res) => {
   if (error) {
     console.error('Profile update error:', error);
     return res.status(500).json({ error: 'Failed to update profile' });
+  }
+
+  // Update phone number in users table if provided
+  if (phone !== undefined) {
+    const { error: userError } = await supabaseAdmin
+      .from('users')
+      .update({ phone: phone || null })
+      .eq('id', req.user.user_id);
+
+    if (userError) {
+      console.error('Phone update error:', userError);
+      return res.status(500).json({ error: 'Failed to update phone number' });
+    }
   }
 
   // Recalculate profile completion

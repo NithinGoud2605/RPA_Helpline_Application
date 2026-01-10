@@ -511,10 +511,13 @@ export const ProfileSetupEnhanced = memo(() => {
                 <Input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => updateFormData('phone', e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => {
+                    // Allow digits, spaces, +, -, and parentheses for Indian format
+                    const value = e.target.value.replace(/[^\d\s\+\-\(\)]/g, '');
+                    updateFormData('phone', value);
+                  }}
                   className="flex-1"
-                  placeholder="9876543210 (Optional)"
-                  maxLength={10}
+                  placeholder="+91 98765 43210 (Optional)"
                 />
                 <p className="text-xs text-muted-foreground">
                   Phone number is optional. You can add it later if needed.
@@ -531,10 +534,13 @@ export const ProfileSetupEnhanced = memo(() => {
                 <Input
                   type="tel"
                   value={formData.alternatePhone}
-                  onChange={(e) => updateFormData('alternatePhone', e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => {
+                    // Allow digits, spaces, +, -, and parentheses for Indian format
+                    const value = e.target.value.replace(/[^\d\s\+\-\(\)]/g, '');
+                    updateFormData('alternatePhone', value);
+                  }}
                   className="flex-1"
-                  placeholder="9876543210"
-                  maxLength={10}
+                  placeholder="+91 98765 43210"
                 />
               </div>
             </CardContent>

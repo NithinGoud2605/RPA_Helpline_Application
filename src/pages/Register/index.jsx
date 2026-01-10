@@ -659,7 +659,7 @@ export const Register = memo(() => {
                       setErrors(prev => ({ ...prev, phone: '' }));
                     }
                   }}
-                  placeholder="+1 234 567 8900 (optional)"
+                    placeholder="+91 98765 43210 (optional)"
                   error={errors.phone}
                   autoComplete="tel"
                 />

@@ -363,9 +363,12 @@ export const ForgotPassword = memo(() => {
                     <Input
                       type="tel"
                       value={profileData.phone}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '') }))}
-                      placeholder="9876543210"
-                      maxLength={10}
+                      onChange={(e) => {
+                        // Allow digits, spaces, +, -, and parentheses for Indian format
+                        const value = e.target.value.replace(/[^\d\s\+\-\(\)]/g, '');
+                        setProfileData(prev => ({ ...prev, phone: value }));
+                      }}
+                      placeholder="+91 98765 43210"
                     />
                   </div>
 

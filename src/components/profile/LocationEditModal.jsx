@@ -139,7 +139,7 @@ export const LocationEditModal = ({ isOpen, onClose, profile, onSave }) => {
             type="tel"
             value={formData.phone}
             onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-            placeholder={formData.country === 'India' ? '+91-9876543210' : '+1-2345678900'}
+            placeholder={formData.country === 'India' ? '+91 98765 43210' : '+1 234 567 8900'}
           />
         </div>
 

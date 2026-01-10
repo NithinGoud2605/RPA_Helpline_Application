@@ -10,7 +10,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { ProfileNameEditModal, BioEditModal, SocialLinksEditModal, ExperienceEditModal } from '../../components/profile/ProfileEditModals';
+import { ProfileNameEditModal, BioEditModal, SocialLinksEditModal, ExperienceEditModal, PhoneEditModal } from '../../components/profile/ProfileEditModals';
 import { ExperienceItemModal } from '../../components/profile/ExperienceItemModal';
 import { SkillsEditModal } from '../../components/profile/SkillsEditModal';
 import { PlatformsEditModal } from '../../components/profile/PlatformsEditModal';
@@ -27,7 +27,7 @@ import {
   MapPin, Globe, Linkedin, Mail, MessageSquare, Award, Briefcase,
   Star, Calendar, ExternalLink, CheckCircle, Building2, Clock,
   Users, GraduationCap, FileText, Edit, Save, X, Upload, Code, Zap,
-  Target, Eye, Plus, Trash2, User, Download, ExternalLink as ExternalLinkIcon
+  Target, Eye, Plus, Trash2, User, Download, ExternalLink as ExternalLinkIcon, Phone
 } from 'lucide-react';
 
 // Proficiency level colors
@@ -70,6 +70,7 @@ export const ProfileDashboard = memo(() => {
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [showResumeViewer, setShowResumeViewer] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [currentExperience, setCurrentExperience] = useState(null);
   const [requestingVerification, setRequestingVerification] = useState(false);
   const avatarInputRef = useRef(null);
@@ -392,6 +393,44 @@ export const ProfileDashboard = memo(() => {
                             >
                               <MapPin className="w-4 h-4" />
                               Add location
+                            </button>
+                          )}
+                          {profile.email && (
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-4 h-4" />
+                              <a 
+                                href={`mailto:${profile.email}`}
+                                className="hover:text-foreground transition-colors"
+                              >
+                                {profile.email}
+                              </a>
+                            </div>
+                          )}
+                          {profile.phone ? (
+                            <div className="group flex items-center gap-1.5">
+                              <Phone className="w-4 h-4" />
+                              <a 
+                                href={`tel:${profile.phone}`}
+                                className="hover:text-foreground transition-colors"
+                              >
+                                {profile.phone}
+                              </a>
+                              <button
+                                onClick={() => setShowPhoneModal(true)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-muted-foreground hover:text-foreground"
+                                title="Edit Phone Number"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setShowPhoneModal(true)}
+                              className="flex items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                              title="Add Phone Number"
+                            >
+                              <Phone className="w-4 h-4" />
+                              Add phone number
                             </button>
                           )}
                           {profile.user_type && (
@@ -975,6 +1014,12 @@ export const ProfileDashboard = memo(() => {
       <SocialLinksEditModal
         isOpen={showSocialModal}
         onClose={() => setShowSocialModal(false)}
+        profile={profile}
+        onSave={handleRefresh}
+      />
+      <PhoneEditModal
+        isOpen={showPhoneModal}
+        onClose={() => setShowPhoneModal(false)}
         profile={profile}
         onSave={handleRefresh}
       />

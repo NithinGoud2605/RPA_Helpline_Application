@@ -26,24 +26,25 @@ router.get('/dashboard', authenticateToken, asyncHandler(async (req, res) => {
   // Role-specific stats
   if (userType === 'freelancer' || userType === 'ba_pm') {
     // Get active projects (where user is a freelancer)
+    // Note: project_applications uses freelancer_id, not applicant_id
     const { count: activeProjects } = await supabaseAdmin
       .from('project_applications')
       .select('*', { count: 'exact', head: true })
-      .eq('applicant_id', userId)
-      .in('status', ['hired', 'in_progress']);
+      .eq('freelancer_id', userId)
+      .in('status', ['hired', 'accepted', 'in_progress']);
 
     // Get pending applications
     const { count: pendingApplications } = await supabaseAdmin
       .from('project_applications')
       .select('*', { count: 'exact', head: true })
-      .eq('applicant_id', userId)
+      .eq('freelancer_id', userId)
       .eq('status', 'pending');
 
     // Get completed projects
     const { count: completedProjects } = await supabaseAdmin
       .from('project_applications')
       .select('*', { count: 'exact', head: true })
-      .eq('applicant_id', userId)
+      .eq('freelancer_id', userId)
       .eq('status', 'completed');
 
     stats.active_projects = activeProjects || 0;

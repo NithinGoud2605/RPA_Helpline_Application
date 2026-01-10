@@ -1,28 +1,8 @@
 // API Service Layer - Backend Integration
 // In production, API is on same origin, so use relative path
 // In development, use localhost or env variable
-const getApiBaseUrl = () => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (envUrl) {
-    // Remove trailing slashes
-    let cleanUrl = envUrl.replace(/\/+$/, '');
-    
-    // If it's a full URL or absolute path
-    if (cleanUrl.startsWith('http') || cleanUrl.startsWith('/')) {
-      // Ensure it ends with /api (unless it's already a complete API URL)
-      if (!cleanUrl.includes('/api') && !cleanUrl.endsWith('/api')) {
-        cleanUrl = `${cleanUrl}/api`;
-      }
-      return cleanUrl;
-    }
-    // Relative path without leading slash
-    return `/api/${cleanUrl}`;
-  }
-  // Default: relative /api in production, localhost in development
-  return import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
 
 // Token storage keys
 const TOKEN_KEY = 'rpa_auth_token';
@@ -80,9 +60,7 @@ const handleResponse = async (response) => {
       if (refreshToken && data.error === 'Token expired') {
         // Try to refresh the token
         try {
-          // Use apiRequest helper to ensure consistent URL construction
-          const refreshUrl = `${API_BASE_URL}${API_BASE_URL.endsWith('/') ? '' : '/'}auth/refresh`.replace(/([^:]\/)\/+/g, '$1');
-          const refreshResponse = await fetch(refreshUrl, {
+          const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken })
@@ -151,11 +129,7 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 
   const queryString = buildQueryString(params);
-  
-  // Normalize URL construction: remove double slashes except for protocol (http://)
-  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-  const url = `${baseUrl}${normalizedEndpoint}${queryString}`.replace(/([^:]\/)\/+/g, '$1');
+  const url = `${API_BASE_URL}${endpoint}${queryString}`;
 
   try {
     const response = await fetch(url, config);
@@ -356,6 +330,8 @@ export const projectApi = {
   delete: (id) => api.delete(`/projects/${id}`),
   apply: (id, applicationData) => api.post(`/projects/${id}/apply`, applicationData),
   getMyProjects: (params) => api.get('/projects/me/projects', params),
+  getApplications: (id, params) => api.get(`/projects/${id}/applications`, params),
+  getApplicationStats: (id) => api.get(`/projects/${id}/applications/stats`),
 };
 
 // =====================
@@ -381,6 +357,8 @@ export const jobApi = {
   delete: (id) => api.delete(`/jobs/${id}`),
   apply: (id, applicationData) => api.post(`/jobs/${id}/apply`, applicationData),
   getMyPostings: (params) => api.get('/jobs/me/postings', params),
+  getApplications: (id, params) => api.get(`/jobs/${id}/applications`, params),
+  getApplicationStats: (id) => api.get(`/jobs/${id}/applications/stats`),
 };
 
 // =====================
@@ -422,6 +400,7 @@ export const profileApi = {
   getById: (id) => api.get(`/profiles/${id}`),
   getMyProfile: () => api.get('/profiles/me'),
   updateProfile: (data) => api.put('/profiles/me', data),
+  requestVerification: () => api.post('/profiles/me/request-verification'),
   
   // Platform expertise
   addPlatform: (data) => api.post('/profiles/me/platforms', data),

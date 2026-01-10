@@ -19,29 +19,47 @@ router.get('/', optionalAuth, paginationValidation, asyncHandler(async (req, res
     search,
     sort = 'created_at',
     order = 'desc',
-    available_only = 'true'
+    available_only,
+    is_available
   } = req.query;
 
   const offset = (page - 1) * limit;
 
+  // Query freelancer_profiles with join to profiles
+  // Try simpler syntax first - Supabase auto-detects foreign keys
   let query = supabaseAdmin
     .from('freelancer_profiles')
     .select(`
       *,
-      user:profiles!freelancer_profiles_user_id_fkey(id, full_name, email, avatar_url)
+      profile:profiles(
+        id,
+        user_id,
+        full_name,
+        email,
+        avatar_url,
+        is_available,
+        headline,
+        bio,
+        country,
+        city,
+        user_type
+      )
     `, { count: 'exact' });
 
-  // Filter by technology
+  // Filter by technology - check if technologies column exists or filter through related tables
+  // Note: Technologies might be in a separate relationship table, skip for now if not in schema
   if (technology) {
-    query = query.contains('technologies', [technology]);
+    // Technology filtering would need to go through user_skills or platform relationships
+    // For now, we'll search in title and profile headline/bio
+    query = query.or(`title.ilike.%${technology}%,profile.headline.ilike.%${technology}%`);
   }
 
-  // Filter by hourly rate
+  // Filter by hourly rate (using hourly_rate_min and hourly_rate_max)
   if (min_rate) {
-    query = query.gte('hourly_rate', parseFloat(min_rate));
+    query = query.gte('hourly_rate_min', parseFloat(min_rate));
   }
   if (max_rate) {
-    query = query.lte('hourly_rate', parseFloat(max_rate));
+    query = query.lte('hourly_rate_max', parseFloat(max_rate));
   }
 
   // Filter by experience
@@ -49,19 +67,31 @@ router.get('/', optionalAuth, paginationValidation, asyncHandler(async (req, res
     query = query.gte('experience_years', parseInt(min_experience));
   }
 
-  // Filter by availability
-  if (available_only === 'true') {
-    query = query.eq('is_available', true);
+  // Filter by availability - handle both is_available and available_only parameters
+  // Accept boolean true/false, string 'true'/'false', or undefined
+  const shouldFilterAvailable = is_available !== undefined 
+    ? (is_available === true || is_available === 'true')
+    : (available_only === 'true' || available_only === true);
+    
+  if (shouldFilterAvailable) {
+    // Filter by availability_status in freelancer_profiles (enum: 'available', 'partially_available', 'busy', 'not_available')
+    query = query.in('availability_status', ['available', 'partially_available']);
   }
 
-  // Search
+  // Search in title and profile fields
+  // Note: Supabase PostgREST syntax for searching joined fields
   if (search) {
-    query = query.or(`title.ilike.%${search}%,bio.ilike.%${search}%`);
+    query = query.or(`title.ilike.%${search}%`);
   }
 
-  // Sorting
-  const validSortFields = ['created_at', 'hourly_rate', 'experience_years', 'rating'];
-  const sortField = validSortFields.includes(sort) ? sort : 'created_at';
+  // Sorting - map hourly_rate to hourly_rate_min for sorting
+  const sortMapping = {
+    'hourly_rate': 'hourly_rate_min',
+    'rating': 'average_rating'
+  };
+  const actualSortField = sortMapping[sort] || sort;
+  const validSortFields = ['created_at', 'hourly_rate_min', 'hourly_rate_max', 'experience_years', 'average_rating', 'title'];
+  const sortField = validSortFields.includes(actualSortField) ? actualSortField : 'created_at';
   query = query.order(sortField, { ascending: order === 'asc' });
 
   // Pagination
@@ -71,7 +101,12 @@ router.get('/', optionalAuth, paginationValidation, asyncHandler(async (req, res
 
   if (error) {
     console.error('Error fetching freelancers:', error);
-    return res.status(500).json({ error: 'Failed to fetch freelancers' });
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    // Return more detailed error in development, generic error in production
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? `Failed to fetch freelancers: ${error.message || JSON.stringify(error)}`
+      : 'Failed to fetch freelancers';
+    return res.status(500).json({ error: errorMessage, details: process.env.NODE_ENV === 'development' ? error : undefined });
   }
 
   res.json({

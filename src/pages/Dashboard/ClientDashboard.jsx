@@ -166,16 +166,27 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
       try {
         const response = await freelancerApi.getAll({ limit: 3, is_available: true });
         const freelancers = response.freelancers || [];
-        const transformed = freelancers.map(f => ({
-          id: f.id,
-          name: f.full_name || 'Freelancer',
-          title: f.headline || 'RPA Developer',
-          rating: f.average_rating || 0,
-          completedProjects: f.total_projects || 0,
-          rate: f.hourly_rate ? `₹${f.hourly_rate}/hr` : 'Negotiable',
-          skills: f.skills?.map(s => s.skill?.name || s.name).filter(Boolean).slice(0, 5) || [],
-          available: f.is_available !== false,
-        }));
+        const transformed = freelancers.map(f => {
+          const profile = f.profile || {};
+          const hourlyRate = f.hourly_rate_min && f.hourly_rate_max
+            ? `₹${f.hourly_rate_min}/hr - ₹${f.hourly_rate_max}/hr`
+            : f.hourly_rate_min
+            ? `₹${f.hourly_rate_min}/hr+`
+            : f.hourly_rate_max
+            ? `Up to ₹${f.hourly_rate_max}/hr`
+            : 'Negotiable';
+          
+          return {
+            id: f.id,
+            name: profile.full_name || 'Freelancer',
+            title: f.title || profile.headline || 'RPA Developer',
+            rating: f.average_rating || 0,
+            completedProjects: f.completed_projects || 0,
+            rate: hourlyRate,
+            skills: [], // Skills would need to be fetched separately or added to the query
+            available: f.availability_status === 'available' || f.availability_status === 'partially_available' || profile.is_available !== false,
+          };
+        });
         setRecommendedTalent(transformed);
       } catch (error) {
         console.error('Failed to fetch talent:', error);
@@ -367,11 +378,11 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-                                {application.applicant?.full_name?.charAt(0) || 'A'}
+                                {(application.freelancer || application.applicant)?.full_name?.charAt(0) || 'A'}
                               </div>
                               <div>
                                 <h4 className="font-display font-bold text-foreground">
-                                  {application.applicant?.full_name || 'Applicant'}
+                                  {(application.freelancer || application.applicant)?.full_name || 'Applicant'}
                                 </h4>
                                 <p className="text-sm text-muted-foreground">{application.project_title}</p>
                               </div>
@@ -385,8 +396,8 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
                               {application.proposed_rate && (
                                 <span>Rate: ₹{application.proposed_rate.toLocaleString()}/hr</span>
                               )}
-                              {application.estimated_duration && (
-                                <span>Duration: {application.estimated_duration}</span>
+                              {application.proposed_duration && (
+                                <span>Duration: {application.proposed_duration}</span>
                               )}
                               <span>Applied: {new Date(application.created_at).toLocaleDateString()}</span>
                             </div>
@@ -403,7 +414,7 @@ export const ClientDashboard = memo(({ initialTab = 'projects' }) => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(`/profile/${application.applicant?.id}`)}
+                                onClick={() => navigate(`/profile/${(application.freelancer || application.applicant)?.id}`)}
                                 className="font-mono text-xs"
                               >
                                 VIEW PROFILE

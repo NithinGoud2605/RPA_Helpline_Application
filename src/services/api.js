@@ -1,8 +1,25 @@
 // API Service Layer - Backend Integration
-// In production, API is on same origin, so use relative path
+// In production, API is on same origin, so use relative path '/api'
 // In development, use localhost or env variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
+let API_BASE_URL;
+
+if (import.meta.env.PROD) {
+  // In production, always use relative path '/api' since frontend and backend are same origin
+  // If VITE_API_BASE_URL is set and is an absolute URL, append /api if missing
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && (envUrl.startsWith('http://') || envUrl.startsWith('https://'))) {
+    // Remove trailing slashes
+    const cleanUrl = envUrl.replace(/\/+$/, '');
+    // Ensure /api is at the end
+    API_BASE_URL = cleanUrl.endsWith('/api') ? cleanUrl : cleanUrl + '/api';
+  } else {
+    // Default to relative path '/api' for same-origin requests
+    API_BASE_URL = '/api';
+  }
+} else {
+  // In development, use env variable or localhost
+  API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+}
 
 // Token storage keys
 const TOKEN_KEY = 'rpa_auth_token';
@@ -129,7 +146,10 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 
   const queryString = buildQueryString(params);
-  const url = `${API_BASE_URL}${endpoint}${queryString}`;
+  // Normalize URL construction: ensure no double slashes between base and endpoint
+  const normalizedBase = API_BASE_URL.replace(/\/+$/, ''); // Remove trailing slashes
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`; // Ensure endpoint starts with /
+  const url = `${normalizedBase}${normalizedEndpoint}${queryString}`;
 
   try {
     const response = await fetch(url, config);

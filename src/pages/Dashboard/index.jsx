@@ -178,7 +178,6 @@ const SidebarNav = memo(({ role, currentSection, setCurrentSection, unreadMessag
       trainer: [
         { id: 'overview', label: 'Dashboard', icon: BarChart3 },
         { id: 'my-courses', label: 'My Courses', icon: GraduationCap },
-        { id: 'create-course', label: 'Create Course', icon: Plus, route: '/create-course' },
         { id: 'browse-jobs', label: 'Browse Jobs', icon: Briefcase, route: '/jobs' },
         { id: 'applications', label: 'My Applications', icon: FileText },
       ],
@@ -542,8 +541,8 @@ export const Dashboard = memo(() => {
         { title: 'UPDATE PROFILE', description: 'Improve your visibility', icon: Settings, iconBg: 'bg-accent/10 border border-accent/30', iconColor: 'text-accent', link: null, section: 'profile' },
       ],
       trainer: [
-        { title: 'CREATE COURSE', description: 'Design a training program', icon: Plus, iconBg: 'bg-primary/10 border border-primary/30', iconColor: 'text-primary', link: '/create-course' },
-        { title: 'MY COURSES', description: 'Manage your courses', icon: GraduationCap, iconBg: 'bg-secondary/10 border border-secondary/30', iconColor: 'text-secondary', link: null, section: 'my-courses' },
+        { title: 'MY COURSES', description: 'Manage your courses', icon: GraduationCap, iconBg: 'bg-primary/10 border border-primary/30', iconColor: 'text-primary', link: null, section: 'my-courses' },
+        { title: 'BROWSE COURSES', description: 'Explore all courses', icon: GraduationCap, iconBg: 'bg-secondary/10 border border-secondary/30', iconColor: 'text-secondary', link: '/courses' },
         { title: 'MY APPLICATIONS', description: 'Track applications', icon: FileText, iconBg: 'bg-accent/10 border border-accent/30', iconColor: 'text-accent', link: null, section: 'applications' },
       ],
       ba_pm: [

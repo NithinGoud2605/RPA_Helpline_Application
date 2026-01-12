@@ -124,60 +124,6 @@ router.get('/:id', idValidation, asyncHandler(async (req, res) => {
   res.json({ program });
 }));
 
-// Create training program
-router.post('/', authenticateToken, requireRole('trainer'), asyncHandler(async (req, res) => {
-  const {
-    title,
-    description,
-    technologies,
-    level,
-    format,
-    duration_hours,
-    price,
-    curriculum,
-    prerequisites,
-    max_students,
-    start_date,
-    end_date
-  } = req.body;
-
-  if (!title || !description) {
-    return res.status(400).json({ error: 'Title and description are required' });
-  }
-
-  const { data: program, error } = await supabaseAdmin
-    .from('training_programs')
-    .insert({
-      trainer_id: req.userId,
-      title,
-      description,
-      technologies: technologies || [],
-      level: level || 'beginner',
-      format: format || 'online',
-      duration_hours: duration_hours || null,
-      price: price || 0,
-      curriculum: curriculum || null,
-      prerequisites: prerequisites || null,
-      max_students: max_students || null,
-      start_date: start_date || null,
-      end_date: end_date || null,
-      status: 'active',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-    .select(`
-      *,
-      trainer:profiles!training_programs_trainer_id_fkey(id, full_name, avatar_url)
-    `)
-    .single();
-
-  if (error) {
-    console.error('Error creating training program:', error);
-    return res.status(500).json({ error: 'Failed to create training program' });
-  }
-
-  res.status(201).json({ message: 'Training program created successfully', program });
-}));
 
 // Update training program
 router.put('/:id', authenticateToken, idValidation, asyncHandler(async (req, res) => {

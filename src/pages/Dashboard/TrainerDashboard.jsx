@@ -6,7 +6,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import {
   GraduationCap, DollarSign, Clock, Star, ArrowRight, Users,
   CheckCircle, Calendar, Eye, TrendingUp, Play, BookOpen,
-  Award, ExternalLink, Video, FileText, Plus, Loader2
+  Award, ExternalLink, Video, FileText, Loader2
 } from 'lucide-react';
 import { trainingApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
@@ -267,12 +267,6 @@ export const TrainerDashboard = memo(() => {
             MY COURSES
           </h2>
           <div className="flex items-center gap-2">
-            <Link to="/create-course">
-              <Button className="bg-primary hover:bg-primary/90 font-mono text-xs tracking-wider glow-red">
-                <Plus className="w-4 h-4 mr-1" />
-                CREATE COURSE
-              </Button>
-            </Link>
             <Link to="/courses">
               <Button variant="ghost" className="font-mono text-xs tracking-wider text-secondary">
                 VIEW ALL <ArrowRight className="w-3 h-3 ml-1" />
@@ -285,9 +279,7 @@ export const TrainerDashboard = memo(() => {
           <EmptyState
             icon={BookOpen}
             title="No courses yet"
-            description="Create your first course to start teaching and earning."
-            action="CREATE YOUR FIRST COURSE"
-            actionLink="/create-course"
+            description="Your courses will appear here once they are available."
           />
         ) : (
           <div className="grid lg:grid-cols-3 gap-4">
@@ -328,24 +320,7 @@ export const TrainerDashboard = memo(() => {
 
       {/* Section: Quick Actions */}
       <section>
-        <div className="grid md:grid-cols-3 gap-4">
-          <Link to="/create-course">
-            <Card className="tech-panel border-border bg-card/50 hover-lift cursor-pointer group h-full">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <Plus className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-display font-bold text-foreground tracking-wider group-hover:text-primary transition-colors">
-                    NEW COURSE
-                  </h3>
-                  <p className="text-sm text-muted-foreground">Create a new training</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </CardContent>
-            </Card>
-          </Link>
-
+        <div className="grid md:grid-cols-2 gap-4">
           <Link to="/courses">
             <Card className="tech-panel border-border bg-card/50 hover-lift cursor-pointer group h-full">
               <CardContent className="p-6 flex items-center gap-4">

@@ -138,7 +138,6 @@ export const breadcrumbLabels = {
   'register': 'Register',
   'sign-in': 'Sign In',
   'admin': 'Admin',
-  'create-course': 'Create Course',
   'applications': 'Applications',
 };
 

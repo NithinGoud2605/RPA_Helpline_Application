@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { 
   Search, Filter, GraduationCap, Clock, Users, DollarSign, 
   ChevronLeft, ChevronRight, BookOpen, Video, Monitor, Globe,
-  Star, Calendar, Plus, X
+  Star, Calendar, X
 } from 'lucide-react';
 import { Container } from '../../components/layout/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
@@ -122,14 +122,6 @@ export const Courses = () => {
               </p>
             </div>
             
-            {role === 'trainer' && (
-              <Link to="/create-course">
-                <Button variant="primary" className="font-display uppercase tracking-wider">
-                  <Plus className="w-4 h-4 mr-2" />
-                  CREATE COURSE
-                </Button>
-              </Link>
-            )}
           </div>
         </div>
 
@@ -192,11 +184,6 @@ export const Courses = () => {
                 ? 'Try adjusting your filters to find more courses.'
                 : 'There are no training programs available at the moment.'}
             </p>
-            {role === 'trainer' && (
-              <Link to="/create-course">
-                <Button variant="primary">Create Your First Course</Button>
-              </Link>
-            )}
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

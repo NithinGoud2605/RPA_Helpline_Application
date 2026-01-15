@@ -808,7 +808,7 @@ export const Register = memo(() => {
         <div className="mt-3 flex flex-wrap items-center justify-center gap-3 md:gap-4 text-muted-foreground text-[10px] font-mono">
           <div className="flex items-center gap-1">
             <Users className="w-3 h-3 text-secondary" />
-            <span><span className="text-secondary font-bold">500+</span> experts</span>
+            <span><span className="text-secondary font-bold">25+</span> experts</span>
           </div>
           <div className="flex items-center gap-1">
             <Globe className="w-3 h-3 text-secondary" />

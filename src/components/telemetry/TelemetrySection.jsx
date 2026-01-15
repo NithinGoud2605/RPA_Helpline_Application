@@ -6,18 +6,18 @@ export const TelemetrySection = () => {
   const metrics = [
     {
       label: 'ACTIVE RPA DEVS',
-      value: 78,
+      value: 18,
       suffix: '+',
       delay: 0,
     },
     {
       label: 'MISSIONS COMPLETE',
-      value: 22,
+      value: 8,
       delay: 0.1,
     },
     {
       label: 'SUCCESS RATE',
-      value: 99.2,
+      value: 96,
       suffix: '%',
       delay: 0.2,
     },

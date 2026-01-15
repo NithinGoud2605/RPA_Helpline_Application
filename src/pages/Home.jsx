@@ -367,9 +367,9 @@ export const Home = memo(() => {
 
   // Memoized static data
   const statsData = useMemo(() => [
-    { value: "500", label: "ACTIVE SPECIALISTS", suffix: "+", icon: Users },
-    { value: "1200", label: "PROJECTS COMPLETED", suffix: "+", icon: Briefcase },
-    { value: "99.8", label: "SUCCESS RATE", suffix: "%", icon: TrendingUp },
+    { value: "25", label: "ACTIVE SPECIALISTS", suffix: "+", icon: Users },
+    { value: "12", label: "PROJECTS COMPLETED", suffix: "+", icon: Briefcase },
+    { value: "96", label: "SUCCESS RATE", suffix: "%", icon: TrendingUp },
     { value: "24", label: "HOUR RESPONSE", suffix: "H", icon: Clock },
   ], []);
 
@@ -972,7 +972,7 @@ export const Home = memo(() => {
                 
                 <div className="mt-12 pt-8 border-t border-border/50">
                   <p className="text-sm text-muted-foreground font-mono">
-                    <span className="text-secondary">500+</span> specialists • <span className="text-secondary">1200+</span> projects • <span className="text-secondary">50+</span> countries
+                    <span className="text-secondary">25+</span> specialists • <span className="text-secondary">12+</span> projects • <span className="text-secondary">5+</span> countries
                   </p>
                 </div>
               </div>

@@ -6,11 +6,11 @@ const responses = {
     action: "MATCHING RPA ENGINEERS...",
   },
   developer: {
-    message: "I can connect you with experienced RPA developers skilled in UiPath, Automation Anywhere, and Blue Prism. Our developers have an average of 5+ years of experience and 95% success rate. What specific automation challenge are you looking to solve?",
+    message: "I can connect you with experienced RPA developers skilled in UiPath, Automation Anywhere, and Blue Prism. Our developers have an average of 5+ years of experience and 96% success rate. What specific automation challenge are you looking to solve?",
     action: "SCANNING AVAILABLE DEVELOPERS...",
   },
   invoice: {
-    message: "Invoice processing automation is one of our most common and successful use cases. Our team has completed 200+ invoice automation projects with an average 80% time reduction. I can connect you with specialists who've worked with major ERP systems like SAP, Oracle, and NetSuite.",
+    message: "Invoice processing automation is one of our most common and successful use cases. Our team has completed 8+ invoice automation projects with an average 80% time reduction. I can connect you with specialists who've worked with major ERP systems like SAP, Oracle, and NetSuite.",
     action: "ANALYZING REQUIREMENTS...",
   },
   automation: {
